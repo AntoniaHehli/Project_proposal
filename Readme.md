@@ -15,6 +15,7 @@ Analysis Geo 880**
 
 ## Research Questions
 <!-- (50-60 words) -->
+What are the average carbon emissions of people using cars, bikes, trains, buses, trams, and boats per week? Using this values, is it possible to achieve climate goals?
 
 ## Results / products
 <!-- What do you expect, anticipate? -->
