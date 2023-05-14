@@ -40,7 +40,7 @@ To be able to assign the elevation values to each fix, we need to extract raster
 
 ## Risk analysis
 <!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
-Theoretical challenges may be finding robust reference values for carbon dioxide emission depending on speed, slope and acceleration. There are many different websites from governments providing various values. Furthermore, it could be difficult to find a overall emission values which allow to address climate change. Another challenge is that we have to deal with twofold uncertainties: Once from the GPS data themselves, but also from the methodology applied. We have to consider this in the interpretation of our results. 
+Theoretical challenges may be finding robust reference values for carbon dioxide emission depending on speed, slope and acceleration. There are many different websites from governments providing various values. Furthermore, it could be difficult to find overall emission values which allow to address climate change. Another challenge is that we have to deal with twofold uncertainties: Once from the GPS data themselves, but also from the methodology applied. We have to consider this in the interpretation of our results. 
 If we cannot find robust values for the emissions, we need to make estimations about the plausibility of the values found. Thereby, it is important that we try to focus on Swiss or EU values, as in the US the percentage use of SUVs is probably higher than in Switzerland.
 
 ## Questions? 
