@@ -30,7 +30,9 @@ output: html
 library("dplyr")
 library("ggplot2")
 library("readr")
+library("raster")
 library("sf")
+library("terra")
 
 ```
 
@@ -95,6 +97,8 @@ posmo_joined <- full_join(posmo_joined, posmo6) |>
   st_as_sf(coords = c("lon_x", "lat_y"), crs = 4326)
 ```
 
+#### Filter transport modes
+
 We only need transportation modes that generate carbon dioxide emissions. Namely, these are car, bus, train, airplane and tram. Therefore, we exclude all other transportation modes.
 
 ```{r filter transportation modes}
@@ -117,6 +121,8 @@ Now, all the tracks with a transportation mode that causes carbon emissions are 
 ggplot(posmo_filter, aes(color = transport_mode)) + 
   geom_sf()
 ```
+
+#### Filter segment lcoations
 
 As is visible in the figure, there are not only data points within Switzerland, but also outside. Therefore, we cut our extent down to only Switzerland. The polygons of Switzerland and of the cantons were downloaded from swisstopo as a geodatabase (.gdb) and preprocessed in QGIS. We excluded Liechtenstein from the Swiss boundaries and converted Switzerland's border as well as the cantons to a geopackage (.gpkg).
 
@@ -148,8 +154,16 @@ posmo_ZH <- st_filter(posmo_filter, zurich)
 ggplot(posmo_ZH, aes(color = transport_mode)) + 
   geom_sf() +
   coord_sf(datum = st_crs(2056))
+```
+
+#### DHM
+
+```{r read DHM}
+
 
 ```
+
+
 
 ## Results
 
