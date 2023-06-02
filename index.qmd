@@ -5,7 +5,6 @@ author: Laura Haus and Antonia Hehli
 output: html
 ---
 
-
 <!-- You can add  your R Code with Code chunks-->
 
 ```{r}
@@ -24,17 +23,18 @@ output: html
 
 ```
 
+## Settings
+
+```{r}
+# import libraries
+library("dplyr")
+library("readr")
+
+```
 
 ## Abstract
 
-<!-- the following is just a placeholder text, remove it!-->
-Society philosophy merciful selfish sexuality depths overcome madness. Morality free faithful merciful ubermensch good oneself convictions intentions eternal-return. Spirit against christianity right selfish evil ultimate pious hatred ocean dead insofar noble. Madness pious madness christianity prejudice horror grandeur god strong. Ideal will philosophy reason pious society burying ascetic right society philosophy. Society will evil intentions against philosophy against holiest victorious.
-
-
 ## Introduction
-
-<!-- the following is just a placeholder text, remove it!-->
-Against holiest pinnacle mountains merciful ideal society play disgust will ubermensch ultimate pinnacle victorious. Snare value law gains battle pious intentions revaluation strong. Insofar snare faith ideal oneself.
 
 ```{r}
 library(ggplot2)
@@ -44,9 +44,6 @@ library(ggplot2)
 knitr::kable(head(mtcars))
 ```
 
-<!-- the following is just a placeholder text, remove it!-->
-Revaluation evil aversion ultimate decrepit disgust decrepit eternal-return noble faithful pinnacle. Truth ascetic inexpedient decrepit free. Ubermensch free merciful mountains endless fearful decieve reason mountains will decrepit strong selfish depths. Overcome faith snare gains oneself transvaluation.
-
 ```{r}
 # include plots automatically
 
@@ -55,22 +52,58 @@ ggplot(mtcars, aes(cyl, disp)) +
 
 ```
 
-
-
-
-
 ## Material and Methods
 
-<!-- the following is just a placeholder text, remove it!-->
-Christianity revaluation value battle faithful marvelous society derive free truth. Right battle mountains superiority grandeur ascetic grandeur merciful. Derive against intentions burying salvation ocean. Right intentions dead victorious ideal spirit evil ultimate joy. Holiest spirit value oneself contradict aversion christianity ultimate convictions war christian.
+### Preprocessing
+
+```{r function loadPosmoData}
+# define a function to load the posmo data
+
+loadPosmoData <- function(filepath){
+  read_delim(filepath, delim = ",") |>
+    
+    # we do not need the place name
+    subset(select = -c(place_name)) |>
+    
+    # remove NA values for transport mode, we need a specified transport mode
+    filter(!is.na(transport_mode))
+  }
+
+```
+
+```{r use function loadPosmoData and join data frames}
+# load all Posmo track files
+posmo <- loadPosmoData("data/posmo_tracks/posmo.csv")
+posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv")
+posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv")
+posmo3 <- loadPosmoData("data/posmo_tracks/posmo_3.csv")
+posmo4 <- loadPosmoData("data/posmo_tracks/posmo_4.csv")
+posmo5 <- loadPosmoData("data/posmo_tracks/posmo_5.csv")
+posmo6 <- loadPosmoData("data/posmo_tracks/posmo_6.csv")
+
+# join the data frames together
+posmo_joined <- full_join(posmo, posmo1)
+posmo_joined <- full_join(posmo_joined, posmo2)
+posmo_joined <- full_join(posmo_joined, posmo3)
+posmo_joined <- full_join(posmo_joined, posmo4)
+posmo_joined <- full_join(posmo_joined, posmo5)
+posmo_joined <- full_join(posmo_joined, posmo6)
+```
+
+We only need transportation modes that generate carbon dioxide emissions. Namely, these are car, bus, train, airplane and tram. Therefore, we exclude all other transportation modes. 
+
+```{r}
+# get all the transportation modes
+unique(posmo_joined$transport_mode)
+
+# save transportation modes we need in a vector
+transport_modes = c("Car", "Bus", "Train", "Tram", "Airplane")
+
+# filter to only the ones we need
+posmo_filter <- posmo_joined |>
+  filter(transport_mode %in% transport_modes)
+```
 
 ## Results
 
-<!-- the following is just a placeholder text, remove it!-->
-Philosophy oneself passion play fearful self noble zarathustra deceptions sexuality. Endless ocean of oneself dead ocean. Selfish decrepit.
-
 ## Discussion
-
-<!-- the following is just a placeholder text, remove it!-->
-Justice convictions spirit sexuality insofar free marvelous joy. Revaluation virtues mountains spirit fearful sexuality love endless. Society intentions will noble burying aversion moral. Insofar passion ultimate mountains of play gains depths joy christian reason christianity mountains dead. Mountains christianity play war holiest ascetic passion oneself derive grandeur. Against pinnacle hope joy burying ocean of horror disgust victorious faithful justice suicide.
-
