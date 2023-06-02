@@ -28,7 +28,9 @@ output: html
 ```{r}
 # import libraries
 library("dplyr")
+library("ggplot2")
 library("readr")
+library("sf")
 
 ```
 
@@ -87,21 +89,66 @@ posmo_joined <- full_join(posmo_joined, posmo2)
 posmo_joined <- full_join(posmo_joined, posmo3)
 posmo_joined <- full_join(posmo_joined, posmo4)
 posmo_joined <- full_join(posmo_joined, posmo5)
-posmo_joined <- full_join(posmo_joined, posmo6)
+
+# make the last join and convert to a sf object
+posmo_joined <- full_join(posmo_joined, posmo6) |>
+  st_as_sf(coords = c("lon_x", "lat_y"), crs = 4326)
 ```
 
-We only need transportation modes that generate carbon dioxide emissions. Namely, these are car, bus, train, airplane and tram. Therefore, we exclude all other transportation modes. 
+We only need transportation modes that generate carbon dioxide emissions. Namely, these are car, bus, train, airplane and tram. Therefore, we exclude all other transportation modes.
 
-```{r}
+```{r filter transportation modes}
 # get all the transportation modes
 unique(posmo_joined$transport_mode)
 
 # save transportation modes we need in a vector
 transport_modes = c("Car", "Bus", "Train", "Tram", "Airplane")
 
-# filter to only the ones we need
+# filter to only the transportation modes we need
 posmo_filter <- posmo_joined |>
   filter(transport_mode %in% transport_modes)
+
+```
+
+Now, all the tracks with a transportation mode that causes carbon emissions are imported. In a next step, we plot the tracks to get an overview over them.
+
+```{r plot all tracks}
+# plot the tracks
+ggplot(posmo_filter, aes(color = transport_mode)) + 
+  geom_sf()
+```
+
+As is visible in the figure, there are not only data points within Switzerland, but also outside. Therefore, we cut our extent down to only Switzerland. The polygons of Switzerland and of the cantons were downloaded from swisstopo as a geodatabase (.gdb) and preprocessed in QGIS. We excluded Liechtenstein from the Swiss boundaries and converted Switzerland's border as well as the cantons to a geopackage (.gpkg).
+
+```{r filter Posmo tracks to CH and ZH}
+# read Switzerland and the cantons
+CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056)
+CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
+
+# filter Zurich
+zurich <- CH_cantons |> 
+  filter(NAME == "Zürich")
+
+# transform the coordinate system to the Swiss crs to intersect with boundaries
+posmo_filter <- posmo_filter |>
+  st_transform(crs = 2056)
+
+# filter points that are within Switzerland
+posmo_CH <- st_filter(posmo_filter, CH_boundaries)
+
+# check if it worked (Switzerland)
+ggplot(posmo_CH, aes(color = transport_mode)) + 
+  geom_sf() +
+  coord_sf(datum = st_crs(2056))
+
+# filter points that are within Zurich
+posmo_ZH <- st_filter(posmo_filter, zurich)
+
+# check if it worked (Zurich)
+ggplot(posmo_ZH, aes(color = transport_mode)) + 
+  geom_sf() +
+  coord_sf(datum = st_crs(2056))
+
 ```
 
 ## Results
