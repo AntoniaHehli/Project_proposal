@@ -207,9 +207,46 @@ c_ebike <- 14
 c_bike <- 8
 ```
 
-We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions.
+```{r function to get the number of days per user}
+# define a function to get the number of weekdays recorded per user id
+get_days <- function(user, posmo_data){
+  # filter the user
+  posmo_user <- posmo_data |>
+    filter(user_id == user)
+  
+  # convert the datetime format to days and get the unique days
+  recorded_days <- unique(as.Date(posmo_user$datetime, format = "%d"))
+  
+  # return the number of unique days
+  return(length(recorded_days))
+}
+```
 
-```{r calculate emissions}
+#### Trajectories within the canton of Zurich
+
+```{r number of days per user ZH}
+# save the unique user_ids in the data set
+posmo_ZH_userids <- unique(posmo_ZH$user_id) 
+
+# make an empty data frame with the number of days per users
+posmo_ZH_days_per_user <- data.frame(user_id = posmo_ZH_userids)
+
+# create an empty vector to append
+number_of_days = c()
+
+# use the created function
+for (i in posmo_ZH_userids){
+  day = get_days(i, posmo_ZH)
+  number_of_days <- append(number_of_days, day)
+}
+
+# add the number of days to the user_id
+posmo_ZH_days_per_user$days <- number_of_days
+```
+
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of days. Therefore, we get the average daily emissions per user.
+
+```{r calculate emissions ZH}
 # calculate the distances [m], the timelag [s], the speed [m/s], and the speek [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
 posmo_ZH <- posmo_ZH |>
   group_by(user_id)|>
@@ -244,12 +281,140 @@ constants_table <- data.frame(
 posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
   left_join(constants_table, by = "transport_mode")
 
-# multiply the CO2 emissions constant with the travelled distance
+# join the numebr of recording days to the data frame
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
+  left_join(posmo_ZH_days_per_user, by = "user_id")
+
+# multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days
 posmo_ZH_traveldistance <- posmo_ZH_traveldistance |>
-  mutate(co2_emissions_g = sum_km * constant_gkm)
+  mutate(co2_emissions_g = sum_km * constant_gkm,
+         co2_emissions_g_per_d = co2_emissions_g/days)
 
 ```
 
+We create a bar chart to have an overview.
+
+```{r total emission ZH}
+# calculate the total emissions by user ID and transportation mode
+emissions_ZH <- aggregate(co2_emissions_g_per_d ~ user_id + transport_mode, posmo_ZH_traveldistance, sum)
+
+# create the bar chart
+ggplot(emissions_ZH, aes(x = user_id, y = co2_emissions_g_per_d, fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Total Emissions [g/day]", fill = "Transport Mode",
+       subtitle = "Movement trajectories within the canton of Zurich") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Day") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+```
+
+#### Trajectories in Switzerland
+
+```{r number of days per user CH}
+# save the unique user_ids in the data set
+posmo_CH_userids <- unique(posmo_CH$user_id) 
+
+# make an empty data frame with the number of days per users
+posmo_CH_days_per_user <- data.frame(user_id = posmo_CH_userids)
+
+# create an empty vector to append
+number_of_days = c()
+
+# use the created function
+for (i in posmo_CH_userids){
+  day = get_days(i, posmo_CH)
+  number_of_days <- append(number_of_days, day)
+}
+
+# add the number of days to the user_id
+posmo_CH_days_per_user$days <- number_of_days
+```
+
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of days. Therefore, we get the average daily emissions per user.
+
+```{r calculate emissions CH}
+# calculate the distances [m], the timelag [s], the speed [m/s], and the speek [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
+posmo_CH <- posmo_CH |>
+  group_by(user_id)|>
+  mutate(
+    distance_m = sqrt((lead(X, 1) - X)^2 + (lead(Y, 1) - Y)^2),
+    distance_km = distance_m/1000,
+    timelag_s = as.integer(difftime(lead(datetime), datetime),
+                           units = "secs"),
+    speed_ms = (distance_m/timelag_s),
+    speed_kmh = (speed_ms*3.6)
+    ) |>
+  ungroup()
+
+# remove NA distance values
+posmo_CH <- posmo_CH |> 
+  filter(!is.na(distance_km))
+
+# group by user_id and transport_mode and sum up the distance in km
+posmo_CH_traveldistance <- 
+  posmo_CH |> 
+  group_by(user_id, transport_mode) |>
+  summarise(sum_km = sum(distance_km))
+
+# join the lookup table to the initial data frame
+posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
+  left_join(constants_table, by = "transport_mode")
+
+# join the numebr of recording days to the data frame
+posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
+  left_join(posmo_CH_days_per_user, by = "user_id")
+
+# multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days
+posmo_CH_traveldistance <- posmo_CH_traveldistance |>
+  mutate(co2_emissions_g = sum_km * constant_gkm,
+         co2_emissions_g_per_d = co2_emissions_g/days)
+
+```
+
+We create a bar chart to have an overview.
+
+```{r total emissions CH}
+# calculate the total emissions by user ID and transportation mode
+emissions_CH <- aggregate(co2_emissions_g_per_d ~ user_id + transport_mode, posmo_CH_traveldistance, sum)
+
+# create the bar chart
+ggplot(emissions_CH, aes(x = user_id, y = co2_emissions_g_per_d, fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Total Emissions [g/day]", fill = "Transport Mode",
+       subtitle = "Movement trajectories in Switzerland") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Day") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+```
+
+We also plot the first results.
+
+```{r plot emissions CH and ZH}
+# for all of Switzerland
+ggplot() + 
+  geom_sf(data = CH_cantons, aes(alpha = 100)) +
+  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g))+
+  labs(title = "Total Emissions per Transport Mode and User",
+     subtitle = "Movement trajectories in Switzerland",
+     x = "E",
+     y = "N")+
+  scale_color_continuous(name = "CO2 emissions [g]")+
+  scale_alpha_continuous(guide = "none") +
+  coord_sf(datum = st_crs(2056))
+
+# for Zurich
+ggplot() + 
+  geom_sf(data = zurich, aes(alpha = 100)) +
+  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g))+
+  labs(title = "Total Emissions per Transport Mode and User",
+     subtitle = "Movement trajectories in the Canton of Zurich",
+     x = "E",
+     y = "N")+
+  scale_color_continuous(name = "CO2 emissions [g]")+
+  scale_alpha_continuous(guide = "none") +
+  coord_sf(datum = st_crs(2056))
+
+```
 
 
 ## Results
