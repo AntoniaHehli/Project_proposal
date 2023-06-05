@@ -106,12 +106,11 @@ We only need transportation modes that generate carbon dioxide emissions. Namely
 unique(posmo_joined$transport_mode)
 
 # save transportation modes we need in a vector
-transport_modes = c("Car", "Bus", "Train", "Tram", "Airplane")
+transport_modes = c("Car", "Bus", "Train", "Tram", "Airplane", "Bike", "E_Bike")
 
 # filter to only the transportation modes we need
 posmo_filter <- posmo_joined |>
   filter(transport_mode %in% transport_modes)
-
 ```
 
 Now, all the tracks with a transportation mode that causes carbon emissions are imported. In a next step, we plot the tracks to get an overview over them.
@@ -139,13 +138,23 @@ zurich <- CH_cantons |>
 posmo_filter <- posmo_filter |>
   st_transform(crs = 2056)
 
+# get only the coordinates of the transformed Posmo data
+posmo_coord <- st_coordinates(posmo_filter)
+
+# append the single X and Y value to the sf object
+posmo_filter$X <- posmo_coord[,1]
+posmo_filter$Y <- posmo_coord[,2]
+
 # filter points that are within Switzerland
 posmo_CH <- st_filter(posmo_filter, CH_boundaries)
 
 # check if it worked (Switzerland)
 ggplot(posmo_CH, aes(color = transport_mode)) + 
   geom_sf() +
-  coord_sf(datum = st_crs(2056))
+  coord_sf(datum = st_crs(2056))+
+  labs(x = "E",
+       y = "N",
+       title = "Posmo tracks in Switzerland")
 
 # filter points that are within Zurich
 posmo_ZH <- st_filter(posmo_filter, zurich)
@@ -153,13 +162,91 @@ posmo_ZH <- st_filter(posmo_filter, zurich)
 # check if it worked (Zurich)
 ggplot(posmo_ZH, aes(color = transport_mode)) + 
   geom_sf() +
-  coord_sf(datum = st_crs(2056))
+  coord_sf(datum = st_crs(2056))+
+  labs(x = "E",
+       y = "N",
+       title = "Posmo tracks in the canton of Zurich")
 ```
 
 #### DHM
 
-```{r read DHM}
+The .asc file of the DHM25 was converted to a .tif file in QGIS before loading it here.
 
+```{r read DHM}
+dhm25 <- rast("data/DHM25/dhm_25.tif")
+```
+
+### First analysis
+
+In the first step of the analysis we use a constant value to define the carbon dioxide emissions of all the Posmo tracks. These constants are defined below.
+
+```{r constants for emissions}
+# for plane [g/km]
+c_plane <- 200
+
+# for cars: we have various sources, therefore, we take a mean value [g/km]
+c_car <- c(130, 162, 122.3, 200) |> 
+  mean()
+
+# for buses
+c_bus <- c(42, 108, 88.7, 25.15) |>
+  mean()
+
+# for trains
+c_train <- c(93, 110.9) |>
+  mean()
+
+# for trams
+c_tram <- c(80, 37) |>
+  mean()
+
+# for e-bikes
+c_ebike <- 14
+
+# for bikes
+c_bike <- 8
+```
+
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions.
+
+```{r calculate emissions}
+# calculate the distances [m], the timelag [s], the speed [m/s], and the speek [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
+posmo_ZH <- posmo_ZH |>
+  group_by(user_id)|>
+  mutate(
+    distance_m = sqrt((lead(X, 1) - X)^2 + (lead(Y, 1) - Y)^2),
+    distance_km = distance_m/1000,
+    timelag_s = as.integer(difftime(lead(datetime), datetime),
+                           units = "secs"),
+    speed_ms = (distance_m/timelag_s),
+    speed_kmh = (speed_ms*3.6)
+    ) |>
+  ungroup()
+
+# remove NA distance values
+posmo_ZH <- posmo_ZH |> 
+  filter(!is.na(distance_km))
+
+# group by user_id and transport_mode and sum up the distance in km
+posmo_ZH_traveldistance <- 
+  posmo_ZH |> 
+  group_by(user_id, transport_mode) |>
+  summarise(sum_km = sum(distance_km))
+
+# create a look-up table for the different emission constants
+constants_table <- data.frame(
+  transport_mode = c("Airplane", "Bike", "Bus", "Car", "E_Bike", "Train", "Tram"),
+  constant_gkm = c(c_plane, c_bike, c_bus, c_car, c_ebike, c_train, c_tram),
+  stringsAsFactors = FALSE
+)
+
+# join the lookup table to the initial data frame
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
+  left_join(constants_table, by = "transport_mode")
+
+# multiply the CO2 emissions constant with the travelled distance
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |>
+  mutate(co2_emissions_g = sum_km * constant_gkm)
 
 ```
 
