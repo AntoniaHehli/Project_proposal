@@ -393,24 +393,24 @@ We also plot the first results.
 # for all of Switzerland
 ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 100)) +
-  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g))+
+  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g_per_d))+
   labs(title = "Total Emissions per Transport Mode and User",
      subtitle = "Movement trajectories in Switzerland",
      x = "E",
      y = "N")+
-  scale_color_continuous(name = "CO2 emissions [g]")+
+  scale_color_continuous(name = "CO2 emissions [g/day]")+
   scale_alpha_continuous(guide = "none") +
   coord_sf(datum = st_crs(2056))
 
 # for Zurich
 ggplot() + 
   geom_sf(data = zurich, aes(alpha = 100)) +
-  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g))+
+  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g_per_d))+
   labs(title = "Total Emissions per Transport Mode and User",
      subtitle = "Movement trajectories in the Canton of Zurich",
      x = "E",
      y = "N")+
-  scale_color_continuous(name = "CO2 emissions [g]")+
+  scale_color_continuous(name = "CO2 emissions [g/day]")+
   scale_alpha_continuous(guide = "none") +
   coord_sf(datum = st_crs(2056))
 
