@@ -360,7 +360,7 @@ posmo_CH_traveldistance <-
 posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
   left_join(constants_table, by = "transport_mode")
 
-# join the numebr of recording days to the data frame
+# join the number of recording days to the data frame
 posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
   left_join(posmo_CH_days_per_user, by = "user_id")
 
@@ -410,9 +410,10 @@ ggplot() +
      subtitle = "Movement trajectories in the Canton of Zurich",
      x = "E",
      y = "N")+
-  scale_color_continuous(name = "CO2 emissions [g/day]")+
+  scale_color_continuous(name = "CO2 emissions [g/day]", type = "viridis")+
   scale_alpha_continuous(guide = "none") +
-  coord_sf(datum = st_crs(2056))
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
 
 ```
 
