@@ -33,7 +33,7 @@ library("readr")
 library("raster")
 library("sf")
 library("terra")
-
+library("lubridate")
 ```
 
 ## Abstract
@@ -74,6 +74,131 @@ loadPosmoData <- function(filepath){
   }
 
 ```
+
+```{r load validated data}
+# load all validated Posmo track files
+posmo <- loadPosmoData("data/posmo_tracks/posmo_2023-04-05T00_00_00+02_00-2023-06-11T23_59_59+02_00.csv")
+
+# remove rows with NA in the coordinates
+posmo <- posmo[!is.na(posmo$lon_x), ]
+
+# convert to sf object
+posmo <- st_as_sf(posmo, coords = c("lon_x", "lat_y"), crs = 4326) |>
+  st_transform(2056)
+
+# extract coordinates
+posmo_coord <- st_coordinates(posmo)
+
+# create one dataframe
+posmo <- cbind(posmo, posmo_coord)
+```
+
+# für einen Tag 
+
+```{r}
+# just try with one day at first
+posmo_filter <- posmo |>
+    filter(as.Date(datetime) == "2023-05-23")
+```
+
+```{r}
+# functions to determine moving window
+movingWindowLag <- function(E, N, n){
+  sqrt((lag(E, n) - E)^2 + (lag(N, n) - N)^2)
+}
+
+movingWindowLead <- function(E, N, n){
+  sqrt((E - lead(E, n))^2 + (N - lead(N, n))^2)
+}
+```
+
+```{r}
+# calculate moving window
+posmo_filter <- posmo_filter |>
+  mutate(
+    minus3 = movingWindowLag(X, Y, 3),
+    minus2 = movingWindowLag(X, Y, 2),
+    minus1 = movingWindowLag(X, Y, 1),
+    plus1 = movingWindowLead(X, Y, 1),
+    plus2 = movingWindowLead(X, Y, 2),
+    plus3 = movingWindowLead(X, Y, 3)
+  )
+
+posmo_filter <- posmo_filter |>
+  rowwise() |>
+  mutate(
+    stepMean = mean(c(minus3, minus2, minus1, plus1, plus2, plus3))
+  ) |>
+  ungroup()
+
+posmo_filter <- posmo_filter |>
+    ungroup() |>
+    mutate(static = stepMean < 50)
+```
+
+```{r}
+summary(posmo_filter)
+
+posmo_filter |>
+  ggplot(aes(X,Y)) +
+  geom_point(aes(colour = static)) +
+  geom_path() +
+  coord_fixed()
+
+posmo_filter <- posmo_filter |>
+    filter(!static)
+```
+
+# für alle Tage
+
+```{r}
+# functions to determine moving window
+movingWindowLag <- function(E, N, n){
+  sqrt((lag(E, n) - E)^2 + (lag(N, n) - N)^2)
+}
+
+movingWindowLead <- function(E, N, n){
+  sqrt((E - lead(E, n))^2 + (N - lead(N, n))^2)
+}
+```
+
+```{r}
+# calculate moving window
+posmo <- posmo |>
+  mutate(
+    minus3 = movingWindowLag(X, Y, 3),
+    minus2 = movingWindowLag(X, Y, 2),
+    minus1 = movingWindowLag(X, Y, 1),
+    plus1 = movingWindowLead(X, Y, 1),
+    plus2 = movingWindowLead(X, Y, 2),
+    plus3 = movingWindowLead(X, Y, 3)
+  )
+
+posmo <- posmo |>
+  rowwise() |>
+  mutate(
+    stepMean = mean(c(minus3, minus2, minus1, plus1, plus2, plus3))
+  ) |>
+  ungroup()
+
+posmo <- posmo |>
+    ungroup() |>
+    mutate(static = stepMean < 50)
+```
+
+```{r}
+summary(posmo)
+
+posmo |>
+  ggplot(aes(X,Y)) +
+  geom_point(aes(colour = static)) +
+  geom_path() +
+  coord_fixed()
+
+posmo <- posmo |>
+    filter(!static)
+```
+
 
 ```{r use function loadPosmoData and join data frames}
 # load all Posmo track files
@@ -173,7 +298,7 @@ ggplot(posmo_ZH, aes(color = transport_mode)) +
 The .asc file of the DHM25 was converted to a .tif file in QGIS before loading it here.
 
 ```{r read DHM}
-dhm25 <- rast("data/DHM25/dhm_25.tif")
+dhm25 <- terra::rast("data/DHM25/dhm_25.tif")
 ```
 
 ### First analysis
@@ -221,6 +346,7 @@ get_days <- function(user, posmo_data){
   return(length(recorded_days))
 }
 ```
+
 
 #### Trajectories within the canton of Zurich
 
@@ -416,6 +542,28 @@ ggplot() +
 
 ```
 
+
+```{r function to get the weekly emissions}
+# define a function to get the number of weekdays recorded per user id
+weekly_emissions <- function(posmo_data, constants){
+  #make sure Date is provided as date and not as datetime
+  posmo_data$week <- isoweek(as.Date(posmo_data$datetime))
+  weekly_distance <- aggregate(distance_km ~ user_id + week + transport_mode, posmo_data, FUN = sum)
+  weekly_emission <- weekly_distance |>
+    left_join(constants, by = "transport_mode")
+  weekly_emission <- weekly_emission |>
+    mutate(
+      co2_emission = distance_km * constant_gkm
+    )
+  return(weekly_emission)
+}
+
+weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
+
+# ist das selbe wie über alles gemittelt
+#weekly_emission_zh_mean <- aggregate(constant_gkm ~ user_id, weekly_emission_zh, FUN = mean)
+
+```
 
 ## Results
 
