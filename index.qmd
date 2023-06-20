@@ -99,7 +99,6 @@ posmo_coord <- st_coordinates(posmo)
 posmo <- cbind(posmo, posmo_coord)
 ```
 
-
 ```{r use function loadPosmoData and join data frames}
 # load all Posmo track files
 posmo <- loadPosmoData("data/posmo_tracks/posmo.csv")
@@ -117,9 +116,22 @@ posmo_joined <- full_join(posmo_joined, posmo3)
 posmo_joined <- full_join(posmo_joined, posmo4)
 posmo_joined <- full_join(posmo_joined, posmo5)
 
-# make the last join and convert to a sf object
-posmo_joined <- full_join(posmo_joined, posmo6) |>
-  st_as_sf(coords = c("lon_x", "lat_y"), crs = 4326)
+# make the last join and convert to a sf object and convert to Swiss coordinates
+posmo_joined <- full_join(posmo_joined, posmo6)
+
+# remove rows with NA in the coordinates
+posmo_joined <- posmo_joined[!is.na(posmo_joined$lon_x), ]
+
+# convert to sf object and to Swiss coordinates
+posmo_joined <- posmo_joined |>
+  st_as_sf(coords = c("lon_x", "lat_y"), crs = 4326) |> 
+  st_transform(2056)
+
+# extract coordinates
+posmo_coord <- st_coordinates(posmo_joined)
+
+# create one dataframe
+posmo_joined <- cbind(posmo_joined, posmo_coord)
 ```
 
 #### Filter transport modes
@@ -143,7 +155,62 @@ Now, all the tracks with a transportation mode that causes carbon emissions are 
 ```{r plot all tracks}
 # plot the tracks
 ggplot(posmo_filter, aes(color = transport_mode)) + 
-  geom_sf()
+  geom_sf()+
+  coord_sf(datum = st_crs(2056))
+```
+
+#### Filter static points
+
+```{r}
+# functions to determine moving window
+movingWindowLag <- function(E, N, n){
+  sqrt((lag(E, n) - E)^2 + (lag(N, n) - N)^2)
+}
+
+movingWindowLead <- function(E, N, n){
+  sqrt((E - lead(E, n))^2 + (N - lead(N, n))^2)
+}
+```
+
+```{r}
+# calculate moving window
+posmo_filter <- posmo_filter |>
+  mutate(
+    minus3 = movingWindowLag(X, Y, 3),
+    minus2 = movingWindowLag(X, Y, 2),
+    minus1 = movingWindowLag(X, Y, 1),
+    plus1 = movingWindowLead(X, Y, 1),
+    plus2 = movingWindowLead(X, Y, 2),
+    plus3 = movingWindowLead(X, Y, 3)
+  )
+
+# calculate the mean steplength
+posmo_filter <- posmo_filter |>
+  rowwise() |>
+  mutate(
+    stepMean = mean(c(minus3, minus2, minus1, plus1, plus2, plus3))
+  ) |>
+  ungroup()
+
+# define a column 'static'
+posmo_filter <- posmo_filter |>
+    ungroup() |>
+    mutate(static = stepMean < 50)
+```
+
+```{r}
+summary(posmo_filter)
+
+# plot the trajectories according to color
+posmo_filter |>
+  ggplot(aes(X,Y)) +
+  geom_point(aes(colour = static)) +
+  geom_path() +
+  coord_fixed()
+
+# remove static points
+posmo_filter <- posmo_filter |>
+    filter(!static)
 ```
 
 #### Filter segment locations
@@ -179,7 +246,8 @@ ggplot(posmo_CH, aes(color = transport_mode)) +
   coord_sf(datum = st_crs(2056))+
   labs(x = "E",
        y = "N",
-       title = "Posmo tracks in Switzerland")
+       title = "Posmo tracks in Switzerland") +
+  guides(color = guide_legend(title = "Transport Mode"))
 
 # filter points that are within Zurich
 posmo_ZH <- st_filter(posmo_filter, zurich)
@@ -190,57 +258,8 @@ ggplot(posmo_ZH, aes(color = transport_mode)) +
   coord_sf(datum = st_crs(2056))+
   labs(x = "E",
        y = "N",
-       title = "Posmo tracks in the canton of Zurich")
-```
-
-#### Filter static points
-
-```{r}
-# functions to determine moving window
-movingWindowLag <- function(E, N, n){
-  sqrt((lag(E, n) - E)^2 + (lag(N, n) - N)^2)
-}
-
-movingWindowLead <- function(E, N, n){
-  sqrt((E - lead(E, n))^2 + (N - lead(N, n))^2)
-}
-```
-
-```{r}
-# calculate moving window
-posmo <- posmo |>
-  mutate(
-    minus3 = movingWindowLag(X, Y, 3),
-    minus2 = movingWindowLag(X, Y, 2),
-    minus1 = movingWindowLag(X, Y, 1),
-    plus1 = movingWindowLead(X, Y, 1),
-    plus2 = movingWindowLead(X, Y, 2),
-    plus3 = movingWindowLead(X, Y, 3)
-  )
-
-posmo <- posmo |>
-  rowwise() |>
-  mutate(
-    stepMean = mean(c(minus3, minus2, minus1, plus1, plus2, plus3))
-  ) |>
-  ungroup()
-
-posmo <- posmo |>
-    ungroup() |>
-    mutate(static = stepMean < 50)
-```
-
-```{r}
-summary(posmo)
-
-posmo |>
-  ggplot(aes(X,Y)) +
-  geom_point(aes(colour = static)) +
-  geom_path() +
-  coord_fixed()
-
-posmo <- posmo |>
-    filter(!static)
+       title = "Posmo tracks in the canton of Zurich") +
+  guides(color = guide_legend(title = "Transport Mode"))
 ```
 
 #### DHM
@@ -297,7 +316,6 @@ get_days <- function(user, posmo_data){
 }
 ```
 
-
 #### Trajectories within the canton of Zurich
 
 ```{r number of days per user ZH}
@@ -309,18 +327,23 @@ posmo_ZH_days_per_user <- data.frame(user_id = posmo_ZH_userids)
 
 # create an empty vector to append
 number_of_days = c()
+number_of_weeks = c()
 
 # use the created function
 for (i in posmo_ZH_userids){
   day = get_days(i, posmo_ZH)
   number_of_days <- append(number_of_days, day)
+  week = day/7
+  number_of_weeks <- append(number_of_weeks, week)
 }
 
-# add the number of days to the user_id
+# add the number of days and weeks to the user_id
 posmo_ZH_days_per_user$days <- number_of_days
+posmo_ZH_days_per_user$weeks <- round(number_of_weeks, 3)
+
 ```
 
-We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of days. Therefore, we get the average daily emissions per user.
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days and weeks, we divide the emissions by the number of weeks. Therefore, we get the average weekly emissions per user.
 
 ```{r calculate emissions ZH}
 # calculate the distances [m], the timelag [s], the speed [m/s], and the speek [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
@@ -357,14 +380,15 @@ constants_table <- data.frame(
 posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
   left_join(constants_table, by = "transport_mode")
 
-# join the numebr of recording days to the data frame
+# join the number of recording days to the data frame
 posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
   left_join(posmo_ZH_days_per_user, by = "user_id")
 
-# multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days
+# multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days/weeks
 posmo_ZH_traveldistance <- posmo_ZH_traveldistance |>
   mutate(co2_emissions_g = sum_km * constant_gkm,
-         co2_emissions_g_per_d = co2_emissions_g/days)
+         co2_emissions_g_per_d = co2_emissions_g/days,
+         co2_emissions_g_per_w = co2_emissions_g/weeks)
 
 ```
 
@@ -372,21 +396,21 @@ We create a bar chart to have an overview.
 
 ```{r total emission ZH}
 # calculate the total emissions by user ID and transportation mode
-emissions_ZH <- aggregate(co2_emissions_g_per_d ~ user_id + transport_mode, posmo_ZH_traveldistance, sum)
+emissions_ZH <- aggregate(co2_emissions_g_per_w ~ user_id + transport_mode, posmo_ZH_traveldistance, sum)
 
 # create the bar chart
-ggplot(emissions_ZH, aes(x = user_id, y = co2_emissions_g_per_d, fill = transport_mode)) +
+ggplot(emissions_ZH, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users", y = "Total Emissions [g/day]", fill = "Transport Mode",
+  labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
        subtitle = "Movement trajectories within the canton of Zurich") +
-  ggtitle("Total Emissions by User ID and Transportation Mode per Day") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
   theme_minimal()+
   theme(axis.text.x = element_blank())
 ```
 
 #### Trajectories in Switzerland
 
-```{r number of days per user CH}
+```{r number of days and weeks per user CH}
 # save the unique user_ids in the data set
 posmo_CH_userids <- unique(posmo_CH$user_id) 
 
@@ -395,18 +419,22 @@ posmo_CH_days_per_user <- data.frame(user_id = posmo_CH_userids)
 
 # create an empty vector to append
 number_of_days = c()
+number_of_weeks = c()
 
 # use the created function
 for (i in posmo_CH_userids){
   day = get_days(i, posmo_CH)
   number_of_days <- append(number_of_days, day)
+  week = day/7
+  number_of_weeks <- append(number_of_weeks, week)
 }
 
-# add the number of days to the user_id
+# add the number of days and weeks rounded to 3 digits to the user_id
 posmo_CH_days_per_user$days <- number_of_days
+posmo_CH_days_per_user$weeks <- round(number_of_weeks, 3)
 ```
 
-We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of days. Therefore, we get the average daily emissions per user.
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of weeks. Therefore, we get the average weekly emissions per user.
 
 ```{r calculate emissions CH}
 # calculate the distances [m], the timelag [s], the speed [m/s], and the speek [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
@@ -443,7 +471,8 @@ posmo_CH_traveldistance <- posmo_CH_traveldistance |>
 # multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days
 posmo_CH_traveldistance <- posmo_CH_traveldistance |>
   mutate(co2_emissions_g = sum_km * constant_gkm,
-         co2_emissions_g_per_d = co2_emissions_g/days)
+         co2_emissions_g_per_d = co2_emissions_g/days,
+         co2_emissions_g_per_w = co2_emissions_g/weeks)
 
 ```
 
@@ -451,14 +480,14 @@ We create a bar chart to have an overview.
 
 ```{r total emissions CH}
 # calculate the total emissions by user ID and transportation mode
-emissions_CH <- aggregate(co2_emissions_g_per_d ~ user_id + transport_mode, posmo_CH_traveldistance, sum)
+emissions_CH <- aggregate(co2_emissions_g_per_w ~ user_id + transport_mode, posmo_CH_traveldistance, sum)
 
 # create the bar chart
-ggplot(emissions_CH, aes(x = user_id, y = co2_emissions_g_per_d, fill = transport_mode)) +
+ggplot(emissions_CH, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users", y = "Total Emissions [g/day]", fill = "Transport Mode",
+  labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
        subtitle = "Movement trajectories in Switzerland") +
-  ggtitle("Total Emissions by User ID and Transportation Mode per Day") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
   theme_minimal()+
   theme(axis.text.x = element_blank())
 ```
@@ -469,35 +498,34 @@ We also plot the first results.
 # for all of Switzerland
 ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 100)) +
-  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g_per_d))+
+  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g_per_w))+
   labs(title = "Total Emissions per Transport Mode and User",
      subtitle = "Movement trajectories in Switzerland",
      x = "E",
      y = "N")+
-  scale_color_continuous(name = "CO2 emissions [g/day]")+
+  scale_color_continuous(name = "CO2 emissions [g/week]", type = "viridis")+
   scale_alpha_continuous(guide = "none") +
   coord_sf(datum = st_crs(2056))
 
 # for Zurich
 ggplot() + 
   geom_sf(data = zurich, aes(alpha = 100)) +
-  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g_per_d))+
+  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g_per_w))+
   labs(title = "Total Emissions per Transport Mode and User",
      subtitle = "Movement trajectories in the Canton of Zurich",
      x = "E",
      y = "N")+
-  scale_color_continuous(name = "CO2 emissions [g/day]", type = "viridis")+
+  scale_color_continuous(name = "CO2 emissions [g/week]", type = "viridis")+
   scale_alpha_continuous(guide = "none") +
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 
 ```
 
-
 ```{r function to get the weekly emissions}
 # define a function to get the number of weekdays recorded per user id
 weekly_emissions <- function(posmo_data, constants){
-  #make sure Date is provided as date and not as datetime
+  # make sure Date is provided as date and not as datetime
   posmo_data$week <- isoweek(as.Date(posmo_data$datetime))
   weekly_distance <- aggregate(distance_km ~ user_id + week + transport_mode, posmo_data, FUN = sum)
   weekly_emission <- weekly_distance |>
