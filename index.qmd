@@ -267,7 +267,7 @@ ggplot(posmo_ZH, aes(color = transport_mode)) +
 The .asc file of the DHM25 was converted to a .tif file in QGIS before loading it here.
 
 ```{r read DHM}
-dhm25 <- terra::rast("data/DHM25/dhm_25.tif")
+dhm25 <- terra::rast("data/DHM25/dhm25_grid_raster.asc")
 ```
 
 ### First analysis
@@ -543,6 +543,51 @@ weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
 #weekly_emission_zh_mean <- aggregate(constant_gkm ~ user_id, weekly_emission_zh, FUN = mean)
 
 ```
+
+#### Acceleration
+
+```{r calcualte acceleration for Zurich}
+posmo_ZH <- posmo_ZH |>
+  group_by(user_id)|>
+  mutate(
+    speed_change_ms = lead(speed_ms, 1) - speed_ms,
+    acceleration_ms2 = speed_change_ms/timelag_s,
+    acceleration = acceleration_ms2 >= 0)|>
+  ungroup()
+```
+
+```{r calcualte acceleration for CH}
+posmo_CH <- posmo_CH |>
+  group_by(user_id)|>
+  mutate(
+    speed_change_ms = lead(speed_ms, 1) - speed_ms,
+    acceleration_ms2 = speed_change_ms/timelag_s,
+    acceleration = acceleration_ms2 >= 0)|>
+  ungroup()
+```
+
+```{r plot (de)acceleration for CH}
+ggplot()+
+  geom_sf(data = posmo_CH, aes(color = acceleration))+
+  labs(title = "Locations with acceleration",
+     subtitle = "Movement trajectories in Switzerland",
+     x = "E",
+     y = "N")+
+  guides(color = guide_legend(title = "Acceleration"))+
+  coord_sf(datum = st_crs(2056))
+```
+
+```{r plot (de)acceleration for ZH}
+ggplot()+
+  geom_sf(data = posmo_ZH, aes(color = acceleration))+
+  labs(title = "Locations with acceleration",
+     subtitle = "Movement trajectories in the canton of Zurich",
+     x = "E",
+     y = "N")+
+  guides(color = guide_legend(title = "Acceleration"))+
+  coord_sf(datum = st_crs(2056))
+```
+
 
 ## Results
 
