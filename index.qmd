@@ -574,7 +574,8 @@ ggplot()+
      x = "E",
      y = "N")+
   guides(color = guide_legend(title = "Acceleration"))+
-  coord_sf(datum = st_crs(2056))
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
 ```
 
 ```{r plot (de)acceleration for ZH}
@@ -585,7 +586,8 @@ ggplot()+
      x = "E",
      y = "N")+
   guides(color = guide_legend(title = "Acceleration"))+
-  coord_sf(datum = st_crs(2056))
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
 ```
 
 
