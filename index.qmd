@@ -544,6 +544,46 @@ weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
 
 ```
 
+#### Speed influence car
+
+One variable that also influences carbon emission is the speed. We know the change in emission for some speed values 100 and 130 km/h (Umweltbundesamt, 2023). As we also need to know the emission values for slower speeds, we estimated them using a non-linear least squares regression. However, for a certain speed, we believe that there is no more reduction of carbon emissions possible. We set this threshold at *XX* km/h.
+
+```{r interpolation of car speed values}
+# save speed and their respective emission values [g/km] as variables
+speed <- c(100, 110, 120, 130)
+emission <- c(146, 158, 172, 190)
+
+# plot them
+ggplot()+
+  geom_point(aes(x = speed, y = emission))+
+  geom_line(aes(x = speed, y = emission))+
+  labs(title = "Car CO2 emission values depending on speed",
+       x = "Speed [km/h]",
+       y = "CO2 Emission [g/km]")
+
+# fit a non-linear least squares regression
+fit_emission <- nls(emission ~ a * exp(b * speed), start = list(a = 100, b = 0.02))
+
+# predicting new estimation values
+speed_new <- seq(30, 130, by = 5)
+emission_pred <- predict(fit_emission, newdata = data.frame(speed = speed_new))
+
+# save the new values in a data frame
+est_emission_car_speed <- data.frame(speed_new, emission_pred)
+
+# plot the predicted as well as the old values
+ggplot()+
+  geom_point(aes(x = speed_new, y = emission_pred), color = "blue")+
+  geom_line(aes(x = speed_new, y = emission_pred), color = "blue")+
+  geom_point(aes(x = speed, y = emission), color = "red")+
+  geom_line(aes(x = speed, y = emission), color = "red")+
+  labs(title = "Estimated car CO2 emission values depending on speed",
+       subtitle = "Estimated values are in blue, known values are in red.",
+       x = "Speed [km/h]",
+       y = "CO2 Emission [g/km]")+
+  theme_minimal()
+```
+
 #### Acceleration
 
 ```{r calcualte acceleration for Zurich}
