@@ -544,7 +544,9 @@ weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
 
 ```
 
-#### Speed influence car
+#### Speed
+
+##### Car
 
 One variable that also influences carbon emission is the speed. We know the change in emission for some speed values 100 and 130 km/h (Umweltbundesamt, 2023). As we also need to know the emission values for slower speeds, we estimated them using a non-linear least squares regression. However, for a certain speed, we believe that there is no more reduction of carbon emissions possible. We set this threshold at *XX* km/h.
 
@@ -583,6 +585,85 @@ ggplot()+
        y = "CO2 Emission [g/km]")+
   theme_minimal()
 ```
+
+To join the respective emission values for each speed variable, we need to group the different car speeds to groups of five. That means if a car drives at 32 km/h it is assigned to the group 30km/h, if it drives 38km/h to the group 35km/h and so on. We use the floor function for that.
+
+```{r}
+# filter to all cars
+posmo_ZH_car <- posmo_ZH |>
+  group_by(user_id) |>
+  filter(transport_mode == "Car") |>
+  # divide the speed by 5 and multiply by 5 after flooring to get classes of interval 5
+  mutate(speed_kmh_floored = floor(speed_kmh/5) * 5) |>
+  ungroup()
+
+posmo_CH_car <- posmo_CH |>
+  group_by(user_id) |>
+  filter(transport_mode == "Car") |>
+  mutate(speed_kmh_floored = floor(speed_kmh/5) * 5) |>
+  ungroup()
+```
+
+Now the speeds are ready to be joined with their respective emission values.
+
+```{r}
+# join the emission values for fast movement (car speed over 75km/h)
+posmo_ZH_car_fast <- posmo_ZH_car |> 
+  group_by(user_id)|>
+  filter(speed_kmh_floored > 75) |>
+  left_join(est_emission_car_speed, by = join_by(speed_kmh_floored == speed_new)) |>
+  ungroup()
+
+# set the emission value for slow movement (car speed under 75km/h)
+posmo_ZH_car_slow <- posmo_ZH_car |>
+  group_by(user_id)|>
+  filter(speed_kmh_floored <= 75) |>
+  mutate(emission_pred = 116.41017) |>
+  ungroup()
+
+# combine everything together
+posmo_ZH_car <- rbind(posmo_ZH_car_fast, posmo_ZH_car_slow)
+```
+
+Now we can summarise the travel distance per emission value and user and multiply this with the emission in g/km to get the total emission value per 'emission category' and user. At the end, this is summed up for each user.
+
+```{r}
+# group by user_id to sum up the distance in km
+posmo_ZH_car_traveldistance <- 
+  posmo_ZH_car |> 
+  group_by(user_id, emission_pred) |>
+  summarise(sum_km = sum(distance_km)) |>
+  mutate(emissions_g = sum_km * emission_pred)
+
+# sum up per user
+posmo_ZH_car_emissions <- posmo_ZH_car_traveldistance |>
+  group_by(user_id)|>
+  summarise(sum_emissions_g = sum(emissions_g, na.rm = TRUE))
+
+# join with the number of days & weeks per user
+posmo_ZH_car_emissions <- posmo_ZH_car_emissions |> left_join(posmo_ZH_days_per_user)
+
+# calculate emissions per week
+posmo_ZH_car_emissions <- posmo_ZH_car_emissions |>
+  group_by(user_id)|>
+  mutate(sum_emissions_g_w = sum_emissions_g/weeks)
+```
+
+```{r}
+# calculate the total emissions by user ID and transportation mode
+emissions_car_ZH <- aggregate(sum_emissions_g_w ~ user_id, posmo_ZH_car_emissions, sum)
+
+# create the bar chart
+ggplot(emissions_car_ZH, aes(x = user_id, y = sum_emissions_g_w, fill = user_id)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Car emissions [g/week]", fill = "User",
+       subtitle = "Movement trajectories within the canton of Zurich.\nCar emissions are calculated dependent on speed.") +
+  ggtitle("Car emissions per week by User ID") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
 
 #### Acceleration
 
