@@ -213,6 +213,35 @@ posmo_filter <- posmo_filter |>
     filter(!static)
 ```
 
+#### DHM
+
+For the height information we use the DHM25 which can be downloaded as .asc file from swisstopo (https://www.swisstopo.admin.ch/de/geodata/height/dhm25.html#download). It has a resolution of 25 meters and its coordinate reference system is LV03 (EPSG: 21781).
+
+```{r read DHM}
+# read the raster data using the terra package
+dhm25 <- terra::rast("data/DHM25/dhm25_grid_raster.asc")
+
+# set the raster crs to LV03
+crs(dhm25) <- terra::crs("+init=EPSG:21781")
+```
+
+```{r convert posmo data to LV03}
+# convert posmo data to LV03 to match the CRS of the dhm25
+posmo_filter_lv03 <- posmo_filter |>
+  st_transform(crs = 21781) |>
+  subset(select = -c(X, Y))
+```
+
+```{r extract the height information of the DHM}
+# extract the height information for each posmo location
+height_dhm <- extract(dhm25, posmo_filter_lv03)
+
+# join the height back to the posmo data
+posmo_filter$height <- height_dhm$dhm25_grid_raster
+```
+
+
+
 #### Filter segment locations
 
 As is visible in the figure, there are not only data points within Switzerland, but also outside. Therefore, we cut our extent down to only Switzerland. The polygons of Switzerland and of the cantons were downloaded from swisstopo as a geodatabase (.gdb) and preprocessed in QGIS. We excluded Liechtenstein from the Swiss boundaries and converted Switzerland's border as well as the cantons to a geopackage (.gpkg).
@@ -262,13 +291,7 @@ ggplot(posmo_ZH, aes(color = transport_mode)) +
   guides(color = guide_legend(title = "Transport Mode"))
 ```
 
-#### DHM
 
-The .asc file of the DHM25 was converted to a .tif file in QGIS before loading it here.
-
-```{r read DHM}
-dhm25 <- terra::rast("data/DHM25/dhm25_grid_raster.asc")
-```
 
 ### First analysis
 
