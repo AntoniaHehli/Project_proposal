@@ -5,24 +5,6 @@ author: Laura Haus and Antonia Hehli
 output: html
 ---
 
-<!-- You can add  your R Code with Code chunks-->
-
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-
-# You can set chunk options individually per code chunk, as was done with this
-# code chunk.
-
-# echo: false           hides the code from the generated output
-# warning: false        hides warnings from the generated output
-# message: false        hides messages from the generated output
-
-# To apply the setting for all code chunks, add the options to the yaml header of the document (in between the ---) without the preceeding "#|".
-
-```
-
 ## Settings
 
 ```{r}
@@ -44,22 +26,6 @@ Road transportation is responsible for around 20 percent of global carbon dioxid
 
 However, road traffic is not the only type of traffic that causes carbon dioxide emissions. Trains, trams, and – when also taking production emissions into account – even bicycles cause carbon dioxide emissions. Therefore, we will also take these transportation modes into account.
 In this project, we analyze carbon dioxide emissions by different transportation types using different complexity levels as well as emission scenarios and compare these different setups with each other. We use validated movement data collected by the Posmo app from XY students of the course Computational Movement Analysis in Spring 2023 at ZHAW.
-
-```{r}
-library(ggplot2)
-
-# Include tables with the function "kable"
-
-knitr::kable(head(mtcars))
-```
-
-```{r}
-# include plots automatically
-
-ggplot(mtcars, aes(cyl, disp)) +
-  geom_point()
-
-```
 
 ## Material and Methods
 
@@ -567,8 +533,8 @@ weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
 #### Slope
 
 ```{r plot height values for all posmo data}
-ggplot() + 
-  geom_sf(posmo_CH, aes(color = height)) +
+ggplot(posmo_CH, aes(color = height)) + 
+  geom_sf() +
   coord_sf(datum = st_crs(2056))+
   labs(x = "E",
        y = "N",
@@ -720,7 +686,6 @@ ggplot(emissions_car_ZH, aes(x = user_id, y = sum_emissions_g_w, fill = user_id)
         legend.position = "none")
 ```
 
-
 #### Acceleration
 
 ```{r calcualte acceleration for Zurich}
@@ -766,7 +731,6 @@ ggplot()+
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 ```
-
 
 ## Results
 
