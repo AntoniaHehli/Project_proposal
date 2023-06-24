@@ -5,24 +5,6 @@ author: Laura Haus and Antonia Hehli
 output: html
 ---
 
-<!-- You can add  your R Code with Code chunks-->
-
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-
-# You can set chunk options individually per code chunk, as was done with this
-# code chunk.
-
-# echo: false           hides the code from the generated output
-# warning: false        hides warnings from the generated output
-# message: false        hides messages from the generated output
-
-# To apply the setting for all code chunks, add the options to the yaml header of the document (in between the ---) without the preceeding "#|".
-
-```
-
 ## Settings
 
 ```{r}
@@ -45,22 +27,6 @@ Road transportation is responsible for around 20 percent of global carbon dioxid
 However, road traffic is not the only type of traffic that causes carbon dioxide emissions. Trains, trams, and – when also taking production emissions into account – even bicycles cause carbon dioxide emissions. Therefore, we will also take these transportation modes into account.
 In this project, we analyze carbon dioxide emissions by different transportation types using different complexity levels as well as emission scenarios and compare these different setups with each other. We use validated movement data collected by the Posmo app from XY students of the course Computational Movement Analysis in Spring 2023 at ZHAW.
 
-```{r}
-library(ggplot2)
-
-# Include tables with the function "kable"
-
-knitr::kable(head(mtcars))
-```
-
-```{r}
-# include plots automatically
-
-ggplot(mtcars, aes(cyl, disp)) +
-  geom_point()
-
-```
-
 ## Material and Methods
 
 ### Preprocessing
@@ -82,8 +48,12 @@ loadPosmoData <- function(filepath){
 
 ```{r load validated data}
 # load all validated Posmo track files
-#posmo <- loadPosmoData("data/posmo_tracks/posmo_2023-04-05T00_00_00+02_00-2023-06-11T23_59_59+02_00.csv")
-posmo <- loadPosmoData("data/posmo_tracks/posmo.csv")
+posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv") #Antonia
+posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv") #Laura
+posmo3 <- loadPosmoData("data/posmo_tracks/posmo_3.csv") #Posmo Pool
+
+posmo <- full_join(posmo1, posmo2)
+posmo <- full_join(posmo, posmo3)
 
 # remove rows with NA in the coordinates
 posmo <- posmo[!is.na(posmo$lon_x), ]
@@ -99,40 +69,6 @@ posmo_coord <- st_coordinates(posmo)
 posmo <- cbind(posmo, posmo_coord)
 ```
 
-```{r use function loadPosmoData and join data frames}
-# load all Posmo track files
-posmo <- loadPosmoData("data/posmo_tracks/posmo.csv")
-posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv")
-posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv")
-posmo3 <- loadPosmoData("data/posmo_tracks/posmo_3.csv")
-posmo4 <- loadPosmoData("data/posmo_tracks/posmo_4.csv")
-posmo5 <- loadPosmoData("data/posmo_tracks/posmo_5.csv")
-posmo6 <- loadPosmoData("data/posmo_tracks/posmo_6.csv")
-
-# join the data frames together
-posmo_joined <- full_join(posmo, posmo1)
-posmo_joined <- full_join(posmo_joined, posmo2)
-posmo_joined <- full_join(posmo_joined, posmo3)
-posmo_joined <- full_join(posmo_joined, posmo4)
-posmo_joined <- full_join(posmo_joined, posmo5)
-
-# make the last join and convert to a sf object and convert to Swiss coordinates
-posmo_joined <- full_join(posmo_joined, posmo6)
-
-# remove rows with NA in the coordinates
-posmo_joined <- posmo_joined[!is.na(posmo_joined$lon_x), ]
-
-# convert to sf object and to Swiss coordinates
-posmo_joined <- posmo_joined |>
-  st_as_sf(coords = c("lon_x", "lat_y"), crs = 4326) |> 
-  st_transform(2056)
-
-# extract coordinates
-posmo_coord <- st_coordinates(posmo_joined)
-
-# create one dataframe
-posmo_joined <- cbind(posmo_joined, posmo_coord)
-```
 
 #### Filter transport modes
 
@@ -140,13 +76,13 @@ We only need transportation modes that generate carbon dioxide emissions. Namely
 
 ```{r filter transportation modes}
 # get all the transportation modes
-unique(posmo_joined$transport_mode)
+unique(posmo$transport_mode)
 
 # save transportation modes we need in a vector
 transport_modes = c("Car", "Bus", "Train", "Tram", "Airplane", "Bike", "E_Bike")
 
 # filter to only the transportation modes we need
-posmo_filter <- posmo_joined |>
+posmo_filter <- posmo |>
   filter(transport_mode %in% transport_modes)
 ```
 
