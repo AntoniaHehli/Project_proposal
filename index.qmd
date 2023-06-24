@@ -503,8 +503,8 @@ weekly_emission_zh <- weekly_emissions(posmo_ZH, constants_table)
 #### Slope
 
 ```{r plot height values for all posmo data}
-ggplot() + 
-  geom_sf(posmo_CH, aes(color = height)) +
+ggplot(posmo_CH, aes(color = height)) + 
+  geom_sf() +
   coord_sf(datum = st_crs(2056))+
   labs(x = "E",
        y = "N",
@@ -656,7 +656,6 @@ ggplot(emissions_car_ZH, aes(x = user_id, y = sum_emissions_g_w, fill = user_id)
         legend.position = "none")
 ```
 
-
 #### Acceleration
 
 ```{r calcualte acceleration for Zurich}
@@ -702,7 +701,6 @@ ggplot()+
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 ```
-
 
 ## Results
 
