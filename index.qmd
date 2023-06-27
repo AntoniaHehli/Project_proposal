@@ -591,7 +591,6 @@ grid.arrange(emissions_plot_simple + labs(subtitle = "Car emissions calcualted b
 
 ```
 
-
 ### Analysis including slope
 
 The next aspect that we include to make our analysis more profound is the slope.
@@ -646,10 +645,59 @@ posmo <- posmo |>
 range(posmo$slope_percent)
 ```
 
+We used Xu et al. (2022) as a reference for the change in carbon dioxide emission when passing an inclining slope with the car. These values are now imported.
+
+```{r load and mutate slope emissions}
+emissions_slope <- read_delim("data/Emission_Slope.csv", delim = ";") |>
+  # calculate the absolute increase in carbon emission
+  mutate(increase_gkm = Emission_slope_gkm - Emission_flat_gkm,
+         # calculate the relative increase in carbon emission
+         increase_percent = (increase_gkm/Emission_flat_gkm) * 100)
+
+# get the range of speed in the emission file
+range(emissions_slope$Speed_kmh)
+```
+
+The speed values range from 40km/h to 120km/h. We create three groups of speed values to calculate the increase in carbon emission in a later step. These groups are the following:
+
+- Group 1: 40-60km/h
+
+- Group 2: 70-90km/h
+
+- Group 3: 100-120 km/h
+
+```{r}
+filter_speed <- function(dataset, min_speed, max_speed){
+  dataset |> 
+    filter(Speed_kmh >= min_speed & Speed_kmh <= max_speed)
+}
+
+# filter to the three different groups
+emissions_slope_slow <- filter_speed(emissions_slope, 40, 60)
+emissions_slope_medium <- filter_speed(emissions_slope, 70, 90)
+emissions_slope_fast <- filter_speed(emissions_slope, 100, 120)
+
+calculate_increase_slope_emissions <- function(slope_data){
+  slope_data |> 
+    group_by(Speed_kmh, Gradient) |>
+    mutate(mean_increase_perc = mean(increase_percent))
+}
+
+emissions_slope_slow <- calculate_increase_slope_emissions(emissions_slope_slow)
+emissions_slope_medium <- calculate_increase_slope_emissions(emissions_slope_medium)
+emissions_slope_fast <- calculate_increase_slope_emissions(emissions_slope_fast)
+
+# combine all into one dataframe
+emissions_slope <- emissions_slope_slow |>
+  rbind(emissions_slope_medium, emissions_slope_fast) |>
+  filter(Vehicle != "Large") |>
+  subset(select = -c(Vehicle))
+```
+
 #### Acceleration
 
 ```{r calcualte acceleration for CH}
-posmo_CH <- posmo_CH |>
+posmo <- posmo |>
   group_by(user_id)|>
   mutate(
     speed_change_ms = lead(speed_ms, 1) - speed_ms,
@@ -660,7 +708,7 @@ posmo_CH <- posmo_CH |>
 
 ```{r plot (de)acceleration for CH}
 ggplot()+
-  geom_sf(data = posmo_CH, aes(color = acceleration))+
+  geom_sf(data = posmo, aes(color = acceleration))+
   labs(title = "Locations with acceleration",
      subtitle = "Movement trajectories in Switzerland",
      x = "E",
