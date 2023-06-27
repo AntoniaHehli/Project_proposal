@@ -1,0 +1,191 @@
+```{r filter Posmo tracks to CH and ZH}
+# filter Zurich
+zurich <- CH_cantons |> 
+  filter(NAME == "Zürich")
+
+# transform the coordinate system to the Swiss crs to intersect with boundaries
+posmo_filter <- posmo_filter |>
+  st_transform(crs = 2056)
+
+# get only the coordinates of the transformed Posmo data
+posmo_coord <- st_coordinates(posmo_filter)
+
+# append the single X and Y value to the sf object
+posmo_filter$X <- posmo_coord[,1]
+posmo_filter$Y <- posmo_coord[,2]
+
+# filter points that are within Zurich
+posmo_ZH <- st_filter(posmo_filter, zurich)
+
+# check if it worked (Zurich)
+ggplot(posmo_ZH, aes(color = transport_mode)) + 
+  geom_sf() +
+  coord_sf(datum = st_crs(2056))+
+  labs(x = "E",
+       y = "N",
+       title = "Posmo tracks in the canton of Zurich") +
+  guides(color = guide_legend(title = "Transport Mode"))+
+  theme_minimal()
+```
+
+#### Trajectories within the canton of Zurich
+
+```{r number of days per user ZH}
+# save the unique user_ids in the data set
+posmo_ZH_userids <- unique(posmo_ZH$user_id) 
+
+# make an empty data frame with the number of days per users
+posmo_ZH_days_per_user <- data.frame(user_id = posmo_ZH_userids)
+
+# create an empty vector to append
+number_of_days = c()
+number_of_weeks = c()
+
+# use the created function
+for (i in posmo_ZH_userids){
+  day = get_days(i, posmo_ZH)
+  number_of_days <- append(number_of_days, day)
+  week = day/7
+  number_of_weeks <- append(number_of_weeks, week)
+}
+
+# add the number of days and weeks to the user_id
+posmo_ZH_days_per_user$days <- number_of_days
+posmo_ZH_days_per_user$weeks <- round(number_of_weeks, 3)
+
+```
+
+We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days and weeks, we divide the emissions by the number of weeks. Therefore, we get the average weekly emissions per user.
+
+```{r calculate emissions ZH}
+# calculate the distances [m], the timelag [s], the speed [m/s], and the speed [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
+posmo_ZH <- posmo_ZH |>
+  group_by(user_id)|>
+  mutate(
+    distance_m = sqrt((lead(X, 1) - X)^2 + (lead(Y, 1) - Y)^2),
+    distance_km = distance_m/1000,
+    timelag_s = as.integer(difftime(lead(datetime), datetime),
+                           units = "secs"),
+    speed_ms = (distance_m/timelag_s),
+    speed_kmh = (speed_ms*3.6)
+    ) |>
+  ungroup()
+
+# remove NA distance values
+posmo_ZH <- posmo_ZH |> 
+  filter(!is.na(distance_km))
+
+# group by user_id and transport_mode and sum up the distance in km
+posmo_ZH_traveldistance <- 
+  posmo_ZH |> 
+  group_by(user_id, transport_mode) |>
+  summarise(sum_km = sum(distance_km))
+
+# create a look-up table for the different emission constants
+constants_table <- data.frame(
+  transport_mode = c("Airplane", "Bike", "Bus", "Car", "E_Bike", "Train", "Tram"),
+  stringsAsFactors = FALSE
+)
+
+# include values for emissions and calculate mean, min and max
+constants_table$constant_gkm <- list(c_plane, c_bike, c_bus, c_car, c_ebike, c_train, c_tram) 
+constants_table <- constants_table |>
+  mutate(
+    avg = lapply(constant_gkm, mean),
+    min = lapply(constant_gkm, min),
+    max = lapply(constant_gkm, max)
+  )
+
+# join the lookup table to the initial data frame
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
+  left_join(constants_table, by = "transport_mode")
+
+# join the number of recording days to the data frame
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |> 
+  left_join(posmo_ZH_days_per_user, by = "user_id")
+
+# multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days/weeks
+posmo_ZH_traveldistance <- posmo_ZH_traveldistance |>
+  mutate(co2_emissions_g = sum_km * constant_gkm,
+         co2_emissions_g_per_d = co2_emissions_g/days,
+         co2_emissions_g_per_w = co2_emissions_g/weeks)
+
+```
+
+We create a bar chart to have an overview.
+
+```{r total emission ZH}
+# calculate the total emissions by user ID and transportation mode
+emissions_ZH <- aggregate(co2_emissions_g_per_w ~ user_id + transport_mode, posmo_ZH_traveldistance, sum)
+
+# create the bar chart
+ggplot(emissions_ZH, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
+       subtitle = "Movement trajectories within the canton of Zurich") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+```
+
+```{r plot emissions CH and ZH}
+# for Zurich
+ggplot() + 
+  geom_sf(data = zurich, aes(alpha = 100)) +
+  geom_sf(data = posmo_ZH_traveldistance, aes(color = co2_emissions_g_per_w))+
+  labs(title = "Total Emissions per Transport Mode and User",
+     subtitle = "Movement trajectories in the Canton of Zurich",
+     x = "E",
+     y = "N")+
+  scale_color_continuous(name = "CO2 emissions [g/week]", type = "viridis")+
+  scale_alpha_continuous(guide = "none") +
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
+
+```
+
+```{r calculate slope in percentage, warning = FALSE}
+# for Zurich
+posmo_ZH <- posmo_ZH |>
+  group_by(user_id)|>
+  mutate(
+    height_diff = lead(height, 1) - height,
+    horizontal_diff = sqrt((plus1**2)- (height_diff**2)),
+    slope_percent = (height_diff / horizontal_diff)*100
+    )|>
+  ungroup()
+
+```
+
+```{r}
+# filter to all cars
+posmo_ZH_car <- posmo_ZH |>
+  group_by(user_id) |>
+  filter(transport_mode == "Car") |>
+  # divide the speed by 5 and multiply by 5 after flooring to get classes of interval 5
+  mutate(speed_kmh_floored = floor(speed_kmh/5) * 5) |>
+  ungroup()
+
+```
+
+```{r calcualte acceleration for Zurich}
+posmo_ZH <- posmo_ZH |>
+  group_by(user_id)|>
+  mutate(
+    speed_change_ms = lead(speed_ms, 1) - speed_ms,
+    acceleration_ms2 = speed_change_ms/timelag_s,
+    acceleration = acceleration_ms2 >= 0)|>
+  ungroup()
+```
+
+```{r plot (de)acceleration for ZH}
+ggplot()+
+  geom_sf(data = posmo_ZH, aes(color = acceleration))+
+  labs(title = "Locations with acceleration",
+     subtitle = "Movement trajectories in the canton of Zurich",
+     x = "E",
+     y = "N")+
+  guides(color = guide_legend(title = "Acceleration"))+
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
+```
