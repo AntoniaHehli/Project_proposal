@@ -47,9 +47,9 @@ loadPosmoData <- function(filepath){
 
 ```{r load validated data}
 # load all validated Posmo track files
-posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv") #Antonia
-posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv") #Laura
-posmo3 <- loadPosmoData("data/posmo_tracks/posmo_3.csv") #Posmo Pool
+posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv") # Antonia
+posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv") # Laura
+posmo3 <- loadPosmoData("data/posmo_tracks/posmo_3.csv") # Posmo Pool
 
 posmo <- full_join(posmo1, posmo2)
 posmo <- full_join(posmo, posmo3)
@@ -57,7 +57,7 @@ posmo <- full_join(posmo, posmo3)
 # remove rows with NA in the coordinates
 posmo <- posmo[!is.na(posmo$lon_x), ]
 
-# convert to sf object
+# convert to sf object and transform to LV95
 posmo <- st_as_sf(posmo, coords = c("lon_x", "lat_y"), crs = 4326) |>
   st_transform(2056)
 
@@ -68,10 +68,9 @@ posmo_coord <- st_coordinates(posmo)
 posmo <- cbind(posmo, posmo_coord)
 ```
 
-
 #### Filter transport modes
 
-We only need transportation modes that generate carbon dioxide emissions. In our analysis we include car, bus, train, and tram, bikes and e bikes. As we are only going to focus on trajectories in Switzerland, we do not include airplanes in our considerations.
+We only need transportation modes that generate carbon dioxide emissions. In our analysis we include car, bus, train, and tram, as well as bikes and e-bikes. As we are only going to focus on trajectories in Switzerland, we do not include airplanes in our considerations.
 
 ```{r filter transportation modes}
 # get all the transportation modes
@@ -81,7 +80,7 @@ unique(posmo$transport_mode)
 transport_modes = c("Car", "Bus", "Train", "Tram", "Bike", "E_Bike")
 
 # filter to only the transportation modes we need
-posmo_filter <- posmo |>
+posmo <- posmo |>
   filter(transport_mode %in% transport_modes)
 ```
 
@@ -89,12 +88,14 @@ Now, all the tracks with a transportation mode that causes carbon emissions are 
 
 ```{r plot all tracks}
 # plot the tracks
-ggplot(posmo_filter, aes(color = transport_mode)) + 
+ggplot(posmo, aes(color = transport_mode)) + 
   geom_sf()+
   coord_sf(datum = st_crs(2056))
 ```
 
 #### Filter static points
+
+Carbon emissions are mainly caused when moving forward. Therefore, we filter out all the static points in our data set.
 
 ```{r}
 # functions to determine moving window
@@ -107,9 +108,9 @@ movingWindowLead <- function(E, N, n){
 }
 ```
 
-```{r}
+```{r moving window and step length calculations}
 # calculate moving window
-posmo_filter <- posmo_filter |>
+posmo <- posmo |>
   mutate(
     minus3 = movingWindowLag(X, Y, 3),
     minus2 = movingWindowLag(X, Y, 2),
@@ -120,7 +121,7 @@ posmo_filter <- posmo_filter |>
   )
 
 # calculate the mean steplength
-posmo_filter <- posmo_filter |>
+posmo <- posmo |>
   rowwise() |>
   mutate(
     stepMean = mean(c(minus3, minus2, minus1, plus1, plus2, plus3))
@@ -128,22 +129,48 @@ posmo_filter <- posmo_filter |>
   ungroup()
 
 # define a column 'static'
-posmo_filter <- posmo_filter |>
+posmo <- posmo |>
     ungroup() |>
     mutate(static = stepMean < 50)
 ```
 
 ```{r}
-# plot the trajectories according to color
-posmo_filter |>
+# plot the trajectories if they are static or not
+posmo |>
   ggplot(aes(X,Y)) +
   geom_point(aes(colour = static)) +
   geom_path() +
   coord_fixed()
 
 # remove static points
-posmo_filter <- posmo_filter |>
+posmo <- posmo |>
     filter(!static)
+```
+
+#### Filter segment locations
+
+As is visible in the figure, there are not only data points within Switzerland, but also outside. Therefore, we cut our extent down to only Switzerland. The polygons of Switzerland and of the cantons were downloaded from swisstopo as a geodatabase (.gdb) and preprocessed in QGIS. We excluded Liechtenstein from the Swiss boundaries and converted Switzerland's border as well as the cantons to a geopackage (.gpkg).
+
+```{r filter Posmo tracks to CH}
+# read Switzerland and the cantons
+CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056)
+
+# KÖNNTE MAN EVTL AUCH RAUSNEHMEN, AUSSER MAN WILL DIES NOCH FÜR GRAPHIK NUTZEN -> als Hintergrund evtl. ganz schön für räumliche Orientierung?
+CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
+
+# filter points that are within Switzerland
+posmo <- st_filter(posmo, CH_boundaries)
+
+# check if it worked (Switzerland)
+ggplot() +
+  geom_sf(data = CH_cantons, alpha = 1) +
+  geom_sf(data = posmo, aes(color = transport_mode), size = 0.5) +
+  coord_sf(datum = st_crs(2056)) +
+  labs(x = "E",
+       y = "N",
+       title = "Posmo tracks in Switzerland") +
+  guides(color = guide_legend(title = "Transport Mode"))+
+  theme_minimal()
 ```
 
 #### DHM
@@ -160,44 +187,20 @@ crs(dhm25) <- terra::crs("+init=EPSG:21781")
 
 ```{r convert posmo data to LV03}
 # convert posmo data to LV03 to match the CRS of the dhm25
-posmo_filter_lv03 <- posmo_filter |>
+posmo_lv03 <- posmo |>
   st_transform(crs = 21781) |>
   subset(select = -c(X, Y))
 ```
 
 ```{r extract the height information of the DHM}
 # extract the height information for each posmo location
-height_dhm <- extract(dhm25, posmo_filter_lv03)
+height_dhm <- extract(dhm25, posmo_lv03)
 
 # join the height back to the posmo data
-posmo_filter$height <- height_dhm$dhm25_grid_raster
+posmo$height <- height_dhm$dhm25_grid_raster
 ```
 
-#### Filter segment locations
-
-As is visible in the figure, there are not only data points within Switzerland, but also outside. Therefore, we cut our extent down to only Switzerland. The polygons of Switzerland and of the cantons were downloaded from swisstopo as a geodatabase (.gdb) and preprocessed in QGIS. We excluded Liechtenstein from the Swiss boundaries and converted Switzerland's border as well as the cantons to a geopackage (.gpkg).
-
-```{r filter Posmo tracks to CH}
-# read Switzerland and the cantons
-CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056)
-
-# KÖNNTE MAN EVTL AUCH RAUSNEHMEN, AUSSER MAN WILL DIES NOCH FÜR GRAPHIK NUTZEN
-CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
-
-# filter points that are within Switzerland
-posmo_CH <- st_filter(posmo_filter, CH_boundaries)
-
-# check if it worked (Switzerland)
-ggplot(posmo_CH, aes(color = transport_mode)) + 
-  geom_sf() +
-  coord_sf(datum = st_crs(2056))+
-  labs(x = "E",
-       y = "N",
-       title = "Posmo tracks in Switzerland") +
-  guides(color = guide_legend(title = "Transport Mode"))
-```
-
-### First analysis
+### First analysis using a simple scenario
 
 In the first step of the analysis we use a constant value to define the carbon dioxide emissions of all the Posmo tracks. These constants are defined below.
 
@@ -231,6 +234,7 @@ constants_emission$constant_gkm <- list(c_car, c_bus, c_train, c_tram, c_bike, c
 constants_emission <- constants_emission |>
   mutate(
     avg = sapply(constant_gkm, mean),
+    med = sapply(constant_gkm, median),
     min = sapply(constant_gkm, min),
     max = sapply(constant_gkm, max)
   )
@@ -252,30 +256,30 @@ get_days <- function(user, posmo_data){
 }
 ```
 
-#### Trajectories in Switzerland
+Not everybody recorded the Posmo trajectories over the same amount of time. Therefore, we need a way to normalize the emission values for each person by the same time to make them comparable. We create a file where the number of days and weeks recorded by each user ID is saved.
 
 ```{r number of days and weeks per user CH}
 # save the unique user_ids in the data set
-posmo_CH_userids <- unique(posmo_CH$user_id) 
+posmo_userids <- unique(posmo$user_id) 
 
 # make an empty data frame with the number of days per users
-posmo_CH_days_per_user <- data.frame(user_id = posmo_CH_userids)
+posmo_days_per_user <- data.frame(user_id = posmo_userids)
 
 # create an empty vector to append
 number_of_days = c()
 number_of_weeks = c()
 
 # use the created function
-for (i in posmo_CH_userids){
-  day = get_days(i, posmo_CH)
+for (i in posmo_userids){
+  day = get_days(i, posmo)
   number_of_days <- append(number_of_days, day)
   week = day/7
   number_of_weeks <- append(number_of_weeks, week)
 }
 
 # add the number of days and weeks rounded to 3 digits to the user_id
-posmo_CH_days_per_user$days <- number_of_days
-posmo_CH_days_per_user$weeks <- round(number_of_weeks, 3)
+posmo_days_per_user$days <- number_of_days
+posmo_days_per_user$weeks <- round(number_of_weeks, 3)
 ```
 
 We can now sum the length [km] per transportation medium and person to get an idea about their carbon dioxide emissions. Because the different users recorded a different amount of days, we divide the emissions by the number of weeks. Therefore, we get the average weekly emissions per user.
@@ -295,10 +299,9 @@ calculateEmission <- function(df, dist, c, fun){
 }
 ```
 
-
 ```{r calculate emissions CH}
 # calculate the distances [m], the timelag [s], the speed [m/s], and the speed [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
-posmo_CH <- posmo_CH |>
+posmo <- posmo |>
   group_by(user_id)|>
   mutate(
     distance_m = sqrt((lead(X, 1) - X)^2 + (lead(Y, 1) - Y)^2),
@@ -311,25 +314,25 @@ posmo_CH <- posmo_CH |>
   ungroup()
 
 # remove NA distance values
-posmo_CH <- posmo_CH |> 
+posmo <- posmo |> 
   filter(!is.na(distance_km))
 
 # group by user_id and transport_mode and sum up the distance in km
-posmo_CH_traveldistance <- 
-  posmo_CH |> 
+posmo_traveldistance <- 
+  posmo |> 
   group_by(user_id, transport_mode) |>
   summarise(sum_km = sum(distance_km))
 
 # join the lookup table to the initial data frame
-posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
+posmo_traveldistance <- posmo_traveldistance |> 
   left_join(constants_emission, by = "transport_mode")
 
 # join the number of recording days to the data frame
-posmo_CH_traveldistance <- posmo_CH_traveldistance |> 
-  left_join(posmo_CH_days_per_user, by = "user_id")
+posmo_traveldistance <- posmo_traveldistance |> 
+  left_join(posmo_days_per_user, by = "user_id")
 
 # multiply the CO2 emissions constant with the traveled distance and divide by the number of recorded days
-posmo_CH_traveldistance <- posmo_CH_traveldistance |>
+posmo_traveldistance <- posmo_traveldistance |>
   mutate(co2_emissions_g = sum_km * avg,
          co2_emissions_g_per_d = co2_emissions_g/days,
          co2_emissions_g_per_w = co2_emissions_g/weeks)
@@ -339,10 +342,10 @@ We create a bar chart to have an overview.
 
 ```{r total emissions CH}
 # calculate the total emissions by user ID and transportation mode
-emissions_CH <- aggregate(co2_emissions_g_per_w ~ user_id + transport_mode, posmo_CH_traveldistance, sum)
+emissions <- aggregate(co2_emissions_g_per_w ~ user_id + transport_mode, posmo_traveldistance, sum)
 
 # create the bar chart
-ggplot(emissions_CH, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
+ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
        subtitle = "Movement trajectories in Switzerland") +
@@ -354,19 +357,20 @@ ggplot(emissions_CH, aes(x = user_id, y = co2_emissions_g_per_w, fill = transpor
 We also plot the first results.
 
 ```{r plot emissions CH}
-# for all of Switzerland
 ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 100)) +
-  geom_sf(data = posmo_CH_traveldistance, aes(color = co2_emissions_g_per_w))+
+  geom_sf(data = posmo_traveldistance, aes(color = co2_emissions_g_per_w))+
   labs(title = "Total Emissions per Transport Mode and User",
      subtitle = "Movement trajectories in Switzerland",
      x = "E",
      y = "N")+
   scale_color_continuous(name = "CO2 emissions [g/week]", type = "viridis")+
   scale_alpha_continuous(guide = "none") +
-  coord_sf(datum = st_crs(2056))
-
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
 ```
+
+*Brauchen wir das noch?*
 
 ```{r function to get the weekly emissions}
 # define a function to get the number of weekdays recorded per user id using the average
@@ -383,26 +387,34 @@ weekly_emissions <- function(posmo_data, constants){
   return(weekly_emission)
 }
 
-weekly_emission <- weekly_emissions(posmo_CH, constants_emission)
+weekly_emission <- weekly_emissions(posmo, constants_emission)
 ```
 
-#### Slope
+### Analysis including slope
+
+The first aspect that we include to make our analysis more profound is the slope.
+
+First, all the height values are plotted to get an overview.
 
 ```{r plot height values for all posmo data}
-ggplot(posmo_CH, aes(color = height)) + 
-  geom_sf() +
+ggplot() + 
+  geom_sf(data = CH_cantons, aes(alpha = 100)) +
+  geom_sf(data = posmo, aes(color = height)) +
   coord_sf(datum = st_crs(2056))+
   labs(x = "E",
        y = "N",
        title = "Elevation of posmo locations",
        subtitle = "Posmo data from Switzerland") +
   guides(color = guide_legend(title = "Elevation [m a.s.l.]"))+
+  scale_alpha_continuous(guide = "none") +
   theme_minimal()
 ```
 
+As a next step, we calculate the slope in percentage.
+
 ```{r calculate slope in percentage, warning = FALSE}
 # for Switzerland
-posmo_CH <- posmo_CH |>
+posmo <- posmo |>
   group_by(user_id)|>
   mutate(
     height_diff = lead(height, 1) - height,
@@ -411,6 +423,8 @@ posmo_CH <- posmo_CH |>
     )|>
   ungroup()
 ```
+
+
 
 #### Speed
 
