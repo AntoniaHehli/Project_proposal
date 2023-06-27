@@ -541,6 +541,7 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
        subtitle = "Car emissions calculated using distance * carbon emission constant per distance") +
   ggtitle("Total Car Emissions by User ID per Week") +
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 4, vjust = -0.5)+
+  ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
         legend.text = element_blank())
@@ -551,6 +552,7 @@ plot_car_em <- ggplot(emissions_car, aes(x = user_id, y = co2_emissions_g_per_w,
        subtitle = "Car emissions calculated using distance per speed * speed constants") +
   ggtitle("Total Car Emissions by User ID per Week") +
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 4, vjust = -0.5)+
+  ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
         legend.text = element_blank())
@@ -582,7 +584,7 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
   labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
        subtitle = "Car emissions calculated based on speed") +
   ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
-  ylim(0, 25000)+
+  ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank())
 
@@ -614,7 +616,7 @@ ggplot() +
 As a next step, we calculate the slope in percentage.
 
 ```{r calculate slope in percentage, warning = FALSE}
-# for Switzerland
+# for all posmo data
 posmo <- posmo |>
   group_by(user_id)|>
   mutate(
@@ -643,6 +645,11 @@ posmo <- posmo |>
 
 # check if it worked
 range(posmo$slope_percent)
+
+# filter to only cars
+posmo_car <- posmo |>
+  group_by(user_id) |>
+  filter(transport_mode == "Car")
 ```
 
 We used Xu et al. (2022) as a reference for the change in carbon dioxide emission when passing an inclining slope with the car. These values are now imported.
@@ -652,7 +659,7 @@ emissions_slope <- read_delim("data/Emission_Slope.csv", delim = ";") |>
   # calculate the absolute increase in carbon emission
   mutate(increase_gkm = Emission_slope_gkm - Emission_flat_gkm,
          # calculate the relative increase in carbon emission
-         increase_percent = (increase_gkm/Emission_flat_gkm) * 100)
+         increase_perc = (increase_gkm/Emission_flat_gkm) * 100)
 
 # get the range of speed in the emission file
 range(emissions_slope$Speed_kmh)
@@ -680,7 +687,7 @@ emissions_slope_fast <- filter_speed(emissions_slope, 100, 120)
 calculate_increase_slope_emissions <- function(slope_data){
   slope_data |> 
     group_by(Speed_kmh, Gradient) |>
-    mutate(mean_increase_perc = mean(increase_percent))
+    mutate(mean_increase_perc = mean(increase_perc))
 }
 
 emissions_slope_slow <- calculate_increase_slope_emissions(emissions_slope_slow)
@@ -692,6 +699,149 @@ emissions_slope <- emissions_slope_slow |>
   rbind(emissions_slope_medium, emissions_slope_fast) |>
   filter(Vehicle != "Large") |>
   subset(select = -c(Vehicle))
+```
+
+```{r}
+filter_slopes <- function(emission_data, speed_value){
+  emission_data |>
+    filter(Speed_kmh == speed_value)
+}
+
+# run the function for each speed
+slope_50kmh <- filter_slopes(emissions_slope, 50)
+slope_60kmh <- filter_slopes(emissions_slope, 60)
+slope_70kmh <- filter_slopes(emissions_slope, 70)
+slope_80kmh <- filter_slopes(emissions_slope, 80)
+slope_90kmh <- filter_slopes(emissions_slope, 90)
+slope_100kmh <- filter_slopes(emissions_slope, 100)
+slope_120kmh <- filter_slopes(emissions_slope, 120)
+
+lm_slope50 <- lm(slope_50kmh$Gradient ~ slope_50kmh$mean_increase_perc)
+lm_slope60 <- lm(slope_60kmh$Gradient ~ slope_60kmh$mean_increase_perc)
+lm_slope70 <- lm(slope_70kmh$Gradient ~ slope_70kmh$mean_increase_perc)
+lm_slope80 <- lm(slope_80kmh$Gradient ~ slope_80kmh$mean_increase_perc)
+lm_slope90 <- lm(slope_90kmh$Gradient ~ slope_90kmh$mean_increase_perc)
+lm_slope100 <- lm(slope_100kmh$Gradient ~ slope_100kmh$mean_increase_perc)
+lm_slope120 <- lm(slope_120kmh$Gradient ~ slope_120kmh$mean_increase_perc)
+
+
+# create data frame with coefficients for each speed level
+extrapolation_slope_emissions <- data.frame(speed_kmh = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130,
+                                                          140, 150, 190),
+                                            intercept_q = c(0, 0, 0, 0, 
+                                                            lm_slope50$coefficients[1], lm_slope60$coefficients[1],
+                                                            lm_slope70$coefficients[1], lm_slope80$coefficients[1],
+                                                            lm_slope90$coefficients[1],lm_slope100$coefficients[1],
+                                                            (lm_slope100$coefficients[1] +
+                                                               lm_slope120$coefficients[1])/2,
+                                                            lm_slope120$coefficients[1], 
+                                                            lm_slope120$coefficients[1], lm_slope120$coefficients[1],
+                                                            lm_slope120$coefficients[1], lm_slope120$coefficients[1]),
+                                            slope_m = c(1, 1, 1, 1, 
+                                                        lm_slope50$coefficients[2], lm_slope60$coefficients[2],
+                                                        lm_slope70$coefficients[2], lm_slope80$coefficients[2],
+                                                        lm_slope90$coefficients[2],lm_slope100$coefficients[2],
+                                                        (lm_slope100$coefficients[2] + lm_slope120$coefficients[2])/2,
+                                                        lm_slope120$coefficients[2], lm_slope120$coefficients[2],
+                                                        lm_slope120$coefficients[2], lm_slope120$coefficients[2],
+                                                        lm_slope120$coefficients[2]))
+
+# round speed values to the nearest 10
+posmo_car <- posmo_car |> 
+  mutate(speed_kmh_round = round(speed_kmh, -1))
+
+# join the extrapolation of the emission values with the posmo car data
+posmo_car <- posmo_car |> 
+  full_join(extrapolation_slope_emissions, by = c("speed_kmh_round" = "speed_kmh"))
+```
+
+```{r}
+# calculate the increase in emission for each data point
+posmo_car <- posmo_car |>
+  filter(slope_percent >=0) |>
+  mutate(emission_increase_perc = slope_m * slope_percent + intercept_q) |>
+  filter(emission_increase_perc >= 0)
+
+# count the number of observations per user
+observations_user <- posmo_car |> count(user_id)
+
+posmo_slope_car_increase <- posmo_car|>
+  group_by(user_id) |> 
+  summarise(sum_increase_perc = sum(emission_increase_perc)) |>
+  ungroup()
+
+# add the number of observations to the data frame with the slope emissions
+posmo_slope_car_increase$observations <- observations_user$n
+
+# get the mean increase for each person's car emission when considering the slope
+posmo_slope_car_increase <- posmo_slope_car_increase|>
+  group_by(user_id) |> 
+  mutate(mean_increase_perc = sum_increase_perc/observations) |> 
+  st_drop_geometry()
+
+# join the car emissions with the increase of emission because of slope
+posmo_car_emissions <- posmo_car_emissions |> 
+  left_join(posmo_slope_car_increase, by = "user_id")
+```
+
+```{r}
+posmo_car_emissions <- posmo_car_emissions |>
+  mutate(co2_emissions_g_per_w_slope = co2_emissions_g_per_w * (1 + mean_increase_perc/100))
+```
+
+##### Comparision with other two scenarios
+
+```{r}
+# plot the car emissions with slope considered
+plot_car_em_slope <- ggplot(posmo_car_emissions, aes(x = user_id, y = co2_emissions_g_per_w_slope, fill = user_id)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Total Emissions [g/week]", fill = "User",
+       subtitle = "Car emissions calculated under consideration of the slope") +
+  ggtitle("Total Car Emissions by User ID per Week") +
+  geom_text(aes(label = round(co2_emissions_g_per_w_slope, 1)), size = 4, vjust = -0.5)+
+  ylim(0, 27000)+
+  theme_minimal()+
+  theme(axis.text.x = element_blank(),
+        legend.text = element_blank())
+
+# plot all three histograms next to each other
+grid.arrange(plot_car_em_simple, plot_car_em, plot_car_em_slope, ncol = 3)
+
+```
+
+We now create a new dataframe with the updated car emission values including slope.
+
+```{r}
+# add a column transport mode to the calculated car emissions using speed information as well
+posmo_car_emissions <- posmo_car_emissions |>
+  mutate(transport_mode = "Car") |>
+  subset(select = c(user_id, co2_emissions_g_per_w_slope, transport_mode)) |>
+  st_drop_geometry() |>
+  rename(co2_emissions_g_per_w = co2_emissions_g_per_w_slope)
+
+emissions_new_slope <- emissions |>
+  # remove the 'old' emission values for car
+  filter(transport_mode != "Car") |>
+  # replace these values with the new car emissions calculated based on speed
+  rbind(posmo_car_emissions)
+```
+
+```{r}
+# create the bar chart
+emissions_plot_slope_car <- ggplot(emissions_new_slope, aes(x = user_id, y = co2_emissions_g_per_w, 
+                                                      fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
+       subtitle = "Car emissions calculated based on slope") +
+  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
+  ylim(0, 27000)+
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+
+# plot them next to each other, the 
+grid.arrange(emissions_plot_simple + labs(subtitle = "Car emissions calculated based on distance"),
+             emissions_plot_speed_car, 
+             emissions_plot_slope_car, ncol = 3)
 ```
 
 #### Acceleration
@@ -773,7 +923,7 @@ emission_cal_posmo <- left_join(emission_posmo_sum, emission_CH_sum, by = c("use
   
 ```
 
-```{r}
+```{r, warning = FALSE}
 emission_cal_posmo |>
   ggplot(aes(x = user_id)) +
   geom_linerange(aes(ymin = min_emission_kg, ymax = max_emission_kg, x = user_id),
