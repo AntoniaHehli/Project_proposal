@@ -390,41 +390,6 @@ weekly_emissions <- function(posmo_data, constants){
 weekly_emission <- weekly_emissions(posmo, constants_emission)
 ```
 
-### Analysis including slope
-
-The first aspect that we include to make our analysis more profound is the slope.
-
-First, all the height values are plotted to get an overview.
-
-```{r plot height values for all posmo data}
-ggplot() + 
-  geom_sf(data = CH_cantons, aes(alpha = 100)) +
-  geom_sf(data = posmo, aes(color = height)) +
-  coord_sf(datum = st_crs(2056))+
-  labs(x = "E",
-       y = "N",
-       title = "Elevation of posmo locations",
-       subtitle = "Posmo data from Switzerland") +
-  guides(color = guide_legend(title = "Elevation [m a.s.l.]"))+
-  scale_alpha_continuous(guide = "none") +
-  theme_minimal()
-```
-
-As a next step, we calculate the slope in percentage.
-
-```{r calculate slope in percentage, warning = FALSE}
-# for Switzerland
-posmo <- posmo |>
-  group_by(user_id)|>
-  mutate(
-    height_diff = lead(height, 1) - height,
-    horizontal_diff = sqrt((plus1**2)-(height_diff**2)),
-    slope_percent = (height_diff / horizontal_diff)*100
-    )|>
-  ungroup()
-```
-
-
 
 #### Speed
 
@@ -538,6 +503,61 @@ ggplot(emissions_car_CH, aes(x = user_id, y = sum_emissions_g_w, fill = user_id)
   theme(axis.text.x = element_blank(),
         legend.position = "none")
 ```
+
+### Analysis including slope
+
+The next aspect that we include to make our analysis more profound is the slope.
+
+First, all the height values are plotted to get an overview.
+
+```{r plot height values for all posmo data}
+ggplot() + 
+  geom_sf(data = CH_cantons, aes(alpha = 100)) +
+  geom_sf(data = posmo, aes(color = height)) +
+  coord_sf(datum = st_crs(2056))+
+  labs(x = "E",
+       y = "N",
+       title = "Elevation of posmo locations",
+       subtitle = "Posmo data from Switzerland") +
+  guides(color = guide_legend(title = "Elevation [m a.s.l.]"))+
+  scale_alpha_continuous(guide = "none") +
+  theme_minimal()
+```
+
+As a next step, we calculate the slope in percentage.
+
+```{r calculate slope in percentage, warning = FALSE}
+# for Switzerland
+posmo <- posmo |>
+  group_by(user_id)|>
+  mutate(
+    height_diff = lead(height, 1) - height,
+    horizontal_diff = sqrt((plus1**2)-(height_diff**2)),
+    slope_percent = (height_diff / horizontal_diff)*100
+    )|>
+  ungroup()
+```
+
+```{r remove slope outliers}
+# remove all NA values for slope
+posmo_slope <- posmo |> 
+  filter(!is.na(slope_percent))
+
+# print the range of the slope values in percentage
+range(posmo_slope$slope_percent)
+```
+
+There are slope values ranging from -49057% to 434% which is definitely not realistic. Therefore, we exclude all the values with an absolute slope greater than 100% which equals an inclindation angle of 45%.
+
+```{r}
+# filter absolute slope values greater than 100%
+posmo_slope <- posmo |> 
+  filter(abs(slope_percent) <= 100)
+
+# check if it worked
+range(posmo_slope$slope_percent)
+```
+
 
 #### Acceleration
 
