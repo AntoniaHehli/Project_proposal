@@ -12,11 +12,11 @@ output: html
 library("dplyr")
 library("ggplot2")
 library("gridExtra")
+library("lubridate")
 library("readr")
 library("raster")
 library("sf")
 library("terra")
-library("lubridate")
 ```
 
 ## Abstract
@@ -787,6 +787,23 @@ posmo_car_emissions <- posmo_car_emissions |>
 ```{r}
 posmo_car_emissions <- posmo_car_emissions |>
   mutate(co2_emissions_g_per_w_slope = co2_emissions_g_per_w * (1 + mean_increase_perc/100))
+```
+
+To have a spatial reference, we plot all the increase values between 0.5 and 10% emission increase due to slope.
+
+```{r plot locations with increase due to slope}
+posmo_car |> 
+  # filter increase values between 0.5 and 10%
+  filter(emission_increase_perc >= 0.5 & emission_increase_perc <= 10) |>
+  ggplot()+
+  geom_sf(aes(color = emission_increase_perc))+
+  labs(title = "Increase due to slope",
+       subtitle = "Movement trajectories in Switzerland",
+       x = "E",
+       y = "N")+
+  scale_color_continuous(name = "Increase in emissions due to slope", type = "viridis")+
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
 ```
 
 ##### Comparision with other two scenarios
