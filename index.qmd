@@ -618,10 +618,11 @@ emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_p
   labs(x = "User", 
        y = expression("CO"["2"]~ "Emissions [g/week]"),
        fill = "Transport mode") +
+  labs(subtitle = "Car emissions calcualted based on distance")+
   ggtitle("Average Weeky Emissions per Transportation Mode & User") +
   theme_minimal()+
   theme(plot.title = element_text(size = 8),
-        plot.subtitle = element_text(size = 6)) +
+        plot.subtitle = element_text(size = 7)) +
   ylim(0, 27000)+
   theme(axis.text.x = element_blank())
 
@@ -634,7 +635,7 @@ emissions_bar_simple
 emissions_plot_simple <- ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 0)) +
   geom_sf(data = posmo_traveldistance, aes(color = co2_emissions_g_per_w))+
-  labs(title = "Total Emissions per Transport Mode and User",
+  labs(title = "Average Emissions per Transport Mode and User",
      x = "E",
      y = "N")+
   scale_color_continuous(name = expression("CO"["2"]~ "Emissions [g/week]"), type = "viridis")+
@@ -668,6 +669,7 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 6),
         legend.position = "none",
         plot.title = element_text(size = 10),
         plot.subtitle = element_text(size = 8))
@@ -691,8 +693,10 @@ emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emis
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 3, vjust = 1)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 6),
         legend.position = "none",
-        plot.title = element_text(size = 14))
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-tenthFigure
 #| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.
@@ -713,8 +717,10 @@ plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 6),
         legend.position = "none",
-        plot.title = element_text(size = 14))
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-eleventhFigure
 #| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).
@@ -749,12 +755,12 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
   theme_minimal()+
   theme(axis.text.x = element_blank(),
         plot.title = element_text(size = 8),
-        plot.subtitle = element_text(size = 8))
+        plot.subtitle = element_text(size = 7))
 
 #| label: fig-twelthFigure
 #| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).
 # plot them next to each other
-grid.arrange(emissions_bar_simple + labs(subtitle = "Car emissions calcualted based on distance"), emissions_plot_speed_car, ncol = 2)
+grid.arrange(emissions_bar_simple, emissions_plot_speed_car, ncol = 2)
 ```
 
 ## Slope scenario
@@ -793,6 +799,7 @@ plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissi
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 6),
         legend.text = element_blank(),
         plot.title = element_text(size = 10),
         plot.subtitle = element_text(size = 8))
@@ -827,11 +834,12 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope,
        y = expression("CO"["2"]~ "Emissions [g/week]"), 
        fill = "Transport Mode",
        subtitle = "Car emissions calculated based on slope") +
-  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
+  ggtitle("Average Weekly Emissions per Transport Mode & User") +
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        plot.title = element_text(size = 14))
+        plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 7))
 ```
 
 ```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}
