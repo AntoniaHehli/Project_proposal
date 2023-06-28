@@ -202,7 +202,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="pre-processing" class="level2">
 <h2 class="anchored" data-anchor-id="pre-processing">Pre-Processing</h2>
-<p>Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS. We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account. Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS &amp; ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (source??). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.<br>
+<p>Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS. We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account. Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS &amp; ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.<br>
 Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).</p>
 <div class="cell">
 <details>
@@ -416,7 +416,7 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><em>brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?</em> Habe es versucht, hat auf die schnelle nicht geklappt.</p>
+<p><em>brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?</em> Wir bräuchten nur get_weeks. Habe es versucht, hat auf die schnelle nicht geklappt.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -814,15 +814,17 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"User"</span>, </span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>),</span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport mode"</span>) <span class="sc">+</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode and User"</span>) <span class="sc">+</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>)) <span class="sc">+</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>())</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventhFigure</span></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for different transport modes.</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calcualted based on distance"</span>)<span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode &amp; User"</span>) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>)) <span class="sc">+</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>())</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventhFigure</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for different transport modes.</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20weekly%20emissions%20for%20simple%20approach-1.png" class="img-fluid" width="672"></p>
@@ -834,7 +836,7 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>emissions_plot_simple <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> CH_cantons, <span class="fu">aes</span>(<span class="at">alpha =</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> posmo_traveldistance, <span class="fu">aes</span>(<span class="at">color =</span> co2_emissions_g_per_w))<span class="sc">+</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Emissions per Transport Mode and User"</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Emissions per Transport Mode and User"</span>,</span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">x =</span> <span class="st">"E"</span>,</span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(<span class="at">name =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), <span class="at">type =</span> <span class="st">"viridis"</span>)<span class="sc">+</span></span>
@@ -872,12 +874,14 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ninthFigure</span></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.</span></span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ninthFigure</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20overall%20emission%20of%20car%20for%20simple%20approach-1.png" class="img-fluid" width="672"></p>
@@ -900,12 +904,14 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
 <span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-tenthFigure</span></span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.</span></span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-tenthFigure</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20overall%20emission%20of%20car%20for%20speed%20approach-1.png" class="img-fluid" width="672"></p>
@@ -928,14 +934,16 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eleventhFigure</span></span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, </span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>             plot_car_em, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eleventhFigure</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, </span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>             plot_car_em, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20overall%20emission%20of%20car%20for%20comparison%20of%20both%20approaches-1.png" class="img-fluid" width="672"></p>
@@ -966,16 +974,17 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
 <span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on speed"</span>) <span class="sc">+</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode and User"</span>)<span class="sc">+</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode &amp; User"</span>)<span class="sc">+</span></span>
 <span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
 <span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-twelthFigure</span></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(emissions_bar_simple <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calcualted based on distance"</span>), emissions_plot_speed_car, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>))</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-twelthFigure</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(emissions_bar_simple, emissions_plot_speed_car, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20average%20weekly%20emission-1.png" class="img-fluid" width="672"></p>
@@ -1029,13 +1038,15 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fourteenthFigure</span></span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.</span></span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a><span class="co"># plot all three histograms next to each other</span></span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, plot_car_em, plot_car_em_slope, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fourteenthFigure</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="co"># plot all three histograms next to each other</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, plot_car_em, plot_car_em_slope, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/plot%20overall%20emission%20of%20car%20for%20comparison%20of%20all%20three%20approaches-1.png" class="img-fluid" width="672"></p>
@@ -1067,11 +1078,12 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
 <span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
 <span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on slope"</span>) <span class="sc">+</span></span>
-<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Total Emissions by User ID and Transportation Mode per Week"</span>) <span class="sc">+</span></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weekly Emissions per Transport Mode &amp; User"</span>) <span class="sc">+</span></span>
 <span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
 <span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
 <span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
@@ -1229,16 +1241,11 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 <h1>Discussion</h1>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<p>Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. Due to theses inaccuracies we excluded all the outliers which led to a reduced amount of data and assumptions we had to make. Another limitations concerning our data was that we only had data sets of three different users which may have not represented the grand public well. Further, we used very simplified approaches to calculate the emissions. We considered various sources for the emission constants in the</p>
-<ul>
-<li>simple methods</li>
-<li>many assumptions</li>
-<li>averaging over car types/fuel types, etc.</li>
-</ul>
+<p>Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. Due to theses inaccuracies we excluded all the outliers which led to a reduced amount of data and assumptions we had to make. Another limitations concerning our data was that we only had data sets of three different users which may have not represented the grand public well. Further, we used very simplified approaches to calculate the emissions. We considered various sources for the emission constants in the first and most simple approach, however there are for sure many more sources stating different values. For the speed approach we also used a very simplified method with using one source and extrapolation its observed values. Here, we do not consider anything about car size, fuel type, and so on. Pretty much the same goes for the slope scenario. While the height values extracted from the DHM were quite accurate, the rest of this approach very likely was not. We used values from only one source (Xu et al., 2020) to extrapolated the increase in emission based on the inclination. The sources used two vehicle types with different sizes whereas we averaged for both types. As we only used positive slopes which cause an increase in emission, our calculated increase values were possible to high. Overall, there are many assumptions that we made an also many times that we had to average over certain car types, environmental factors, and so on. Furthermore, we also did not include the occupancy rate of any public transportation vehicle or the cars as we simple did not have easily accessible data about that. The same goes for the influence of the fuel type. We do not know what kind of cars our three users drive which is why we could not consider fuel type of cars in our analysis either.</p>
 </section>
 <section id="outlook" class="level2">
 <h2 class="anchored" data-anchor-id="outlook">Outlook</h2>
-<p>One thing that we did not include was the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.</p>
+<p>There are many factors that could have been included in our analysis as stated above. One thing that we did not include and would suggest to do as a next step is including the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -1278,8 +1285,9 @@ Furthermore, we excluded all slopes which are steeper than 25%, which correspond
 </section>
 <section id="literature" class="level3">
 <h3 class="anchored" data-anchor-id="literature">Literature</h3>
-<p>Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE (2023): Mikrozensus Mobilität und Verkehr (MZMV).</p>
+<p><strong>Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE</strong> (2023): Mikrozensus Mobilität und Verkehr (MZMV).</p>
 <p><strong>Dong, Yaping; Xu, Jinliang; Ni, Jie</strong> (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp.&nbsp;18064-18077.</p>
+<p><strong>Knupfer, G. (Handelszeitung)</strong> (2014): Die SBB fahren im Vergleich im Schneckentempo. URL: <a href="https://www.handelszeitung.ch/unternehmen/die-sbb-fahren-im-vergleich-im-schneckentempo-660389" class="uri">https://www.handelszeitung.ch/unternehmen/die-sbb-fahren-im-vergleich-im-schneckentempo-660389</a> (as at: 29.08.2014) (last access: 28.06.2023).</p>
 <p><strong>Metcalfe, J.; Boulter &amp; P.</strong> (2022). Effect of speed on greenhouse gas emissions from road transport: a review. Report prepared by Emission Impossible Ltd, and EMM Consulting, for Waka Kotahi, December, 2022.</p>
 <p><strong>Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios</strong> (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.</p>
 <p><strong>Xu, Jinliang; Dong, Yaping &amp; Yan, Menghua</strong> (2020): A Model for Estimating Passenger-Car Carbon Emissions that Accounts for Uphill, Downhill and Flat Roads. In: Sustainability, Vol. 12, No.&nbsp;2028.</p>
@@ -1534,7 +1542,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb39-57"><a href="#cb39-57" aria-hidden="true" tabindex="-1"></a>Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.</span>
 <span id="cb39-58"><a href="#cb39-58" aria-hidden="true" tabindex="-1"></a>We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account.</span>
 <span id="cb39-59"><a href="#cb39-59" aria-hidden="true" tabindex="-1"></a>Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS &amp; ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). </span>
-<span id="cb39-60"><a href="#cb39-60" aria-hidden="true" tabindex="-1"></a>We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (source??). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  </span>
+<span id="cb39-60"><a href="#cb39-60" aria-hidden="true" tabindex="-1"></a>We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  </span>
 <span id="cb39-61"><a href="#cb39-61" aria-hidden="true" tabindex="-1"></a>Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).</span>
 <span id="cb39-62"><a href="#cb39-62" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-63"><a href="#cb39-63" aria-hidden="true" tabindex="-1"></a></span>
@@ -1731,7 +1739,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb39-254"><a href="#cb39-254" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb39-255"><a href="#cb39-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb39-256"><a href="#cb39-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-257"><a href="#cb39-257" aria-hidden="true" tabindex="-1"></a>*brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?* Habe es versucht, hat auf die schnelle nicht geklappt. </span>
+<span id="cb39-257"><a href="#cb39-257" aria-hidden="true" tabindex="-1"></a>*brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?* Wir bräuchten nur get_weeks. Habe es versucht, hat auf die schnelle nicht geklappt. </span>
 <span id="cb39-258"><a href="#cb39-258" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-259"><a href="#cb39-259" aria-hidden="true" tabindex="-1"></a><span class="in">```{r define function to get the number of days per user and calculate it}</span></span>
 <span id="cb39-260"><a href="#cb39-260" aria-hidden="true" tabindex="-1"></a><span class="co"># define a function to get the number of weekdays recorded per user id</span></span>
@@ -2095,407 +2103,418 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb39-618"><a href="#cb39-618" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"User"</span>, </span>
 <span id="cb39-619"><a href="#cb39-619" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>),</span>
 <span id="cb39-620"><a href="#cb39-620" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport mode"</span>) <span class="sc">+</span></span>
-<span id="cb39-621"><a href="#cb39-621" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode and User"</span>) <span class="sc">+</span></span>
-<span id="cb39-622"><a href="#cb39-622" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-623"><a href="#cb39-623" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>)) <span class="sc">+</span></span>
-<span id="cb39-624"><a href="#cb39-624" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-625"><a href="#cb39-625" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>())</span>
-<span id="cb39-626"><a href="#cb39-626" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-627"><a href="#cb39-627" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventhFigure</span></span>
-<span id="cb39-628"><a href="#cb39-628" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for different transport modes.</span></span>
-<span id="cb39-629"><a href="#cb39-629" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple</span>
-<span id="cb39-630"><a href="#cb39-630" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-631"><a href="#cb39-631" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-632"><a href="#cb39-632" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot weekly emissions for simple approach on map, output = TRUE}</span></span>
-<span id="cb39-633"><a href="#cb39-633" aria-hidden="true" tabindex="-1"></a>emissions_plot_simple <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb39-634"><a href="#cb39-634" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> CH_cantons, <span class="fu">aes</span>(<span class="at">alpha =</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
-<span id="cb39-635"><a href="#cb39-635" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> posmo_traveldistance, <span class="fu">aes</span>(<span class="at">color =</span> co2_emissions_g_per_w))<span class="sc">+</span></span>
-<span id="cb39-636"><a href="#cb39-636" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Emissions per Transport Mode and User"</span>,</span>
-<span id="cb39-637"><a href="#cb39-637" aria-hidden="true" tabindex="-1"></a>     <span class="at">x =</span> <span class="st">"E"</span>,</span>
-<span id="cb39-638"><a href="#cb39-638" aria-hidden="true" tabindex="-1"></a>     <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
-<span id="cb39-639"><a href="#cb39-639" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(<span class="at">name =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), <span class="at">type =</span> <span class="st">"viridis"</span>)<span class="sc">+</span></span>
-<span id="cb39-640"><a href="#cb39-640" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_alpha_continuous</span>(<span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb39-641"><a href="#cb39-641" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
-<span id="cb39-642"><a href="#cb39-642" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-643"><a href="#cb39-643" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-644"><a href="#cb39-644" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-645"><a href="#cb39-645" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-646"><a href="#cb39-646" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eigthFigure</span></span>
-<span id="cb39-647"><a href="#cb39-647" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Spatial reference for CO~2~ emission based on distances per user normalized over 7 days for all transport modes.</span></span>
-<span id="cb39-648"><a href="#cb39-648" aria-hidden="true" tabindex="-1"></a>emissions_plot_simple</span>
-<span id="cb39-649"><a href="#cb39-649" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-650"><a href="#cb39-650" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-651"><a href="#cb39-651" aria-hidden="true" tabindex="-1"></a>*nicht bereits vorhin nach car gefilteret?? braucht es das nochmals?* Das ist ein anderes File. Hier sind die Emissionen berechnet und vorher waren es die ursprünglichen Posmodaten. Also ja ;)</span>
+<span id="cb39-621"><a href="#cb39-621" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calcualted based on distance"</span>)<span class="sc">+</span></span>
+<span id="cb39-622"><a href="#cb39-622" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode &amp; User"</span>) <span class="sc">+</span></span>
+<span id="cb39-623"><a href="#cb39-623" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-624"><a href="#cb39-624" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb39-625"><a href="#cb39-625" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>)) <span class="sc">+</span></span>
+<span id="cb39-626"><a href="#cb39-626" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-627"><a href="#cb39-627" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>())</span>
+<span id="cb39-628"><a href="#cb39-628" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-629"><a href="#cb39-629" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventhFigure</span></span>
+<span id="cb39-630"><a href="#cb39-630" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for different transport modes.</span></span>
+<span id="cb39-631"><a href="#cb39-631" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple</span>
+<span id="cb39-632"><a href="#cb39-632" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-633"><a href="#cb39-633" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-634"><a href="#cb39-634" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot weekly emissions for simple approach on map, output = TRUE}</span></span>
+<span id="cb39-635"><a href="#cb39-635" aria-hidden="true" tabindex="-1"></a>emissions_plot_simple <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb39-636"><a href="#cb39-636" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> CH_cantons, <span class="fu">aes</span>(<span class="at">alpha =</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb39-637"><a href="#cb39-637" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> posmo_traveldistance, <span class="fu">aes</span>(<span class="at">color =</span> co2_emissions_g_per_w))<span class="sc">+</span></span>
+<span id="cb39-638"><a href="#cb39-638" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Emissions per Transport Mode and User"</span>,</span>
+<span id="cb39-639"><a href="#cb39-639" aria-hidden="true" tabindex="-1"></a>     <span class="at">x =</span> <span class="st">"E"</span>,</span>
+<span id="cb39-640"><a href="#cb39-640" aria-hidden="true" tabindex="-1"></a>     <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
+<span id="cb39-641"><a href="#cb39-641" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(<span class="at">name =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), <span class="at">type =</span> <span class="st">"viridis"</span>)<span class="sc">+</span></span>
+<span id="cb39-642"><a href="#cb39-642" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_alpha_continuous</span>(<span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb39-643"><a href="#cb39-643" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
+<span id="cb39-644"><a href="#cb39-644" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-645"><a href="#cb39-645" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
+<span id="cb39-646"><a href="#cb39-646" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-647"><a href="#cb39-647" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-648"><a href="#cb39-648" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eigthFigure</span></span>
+<span id="cb39-649"><a href="#cb39-649" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Spatial reference for CO~2~ emission based on distances per user normalized over 7 days for all transport modes.</span></span>
+<span id="cb39-650"><a href="#cb39-650" aria-hidden="true" tabindex="-1"></a>emissions_plot_simple</span>
+<span id="cb39-651"><a href="#cb39-651" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb39-652"><a href="#cb39-652" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-653"><a href="#cb39-653" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for simple approach, output = TRUE}</span></span>
-<span id="cb39-654"><a href="#cb39-654" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the simple emission values to only "Car" values</span></span>
-<span id="cb39-655"><a href="#cb39-655" aria-hidden="true" tabindex="-1"></a>emissions_car_simple <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span> </span>
-<span id="cb39-656"><a href="#cb39-656" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">==</span> <span class="st">"Car"</span>)</span>
-<span id="cb39-657"><a href="#cb39-657" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-658"><a href="#cb39-658" aria-hidden="true" tabindex="-1"></a><span class="co"># create a bar chart for only car emissions</span></span>
-<span id="cb39-659"><a href="#cb39-659" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_simple, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
-<span id="cb39-660"><a href="#cb39-660" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-661"><a href="#cb39-661" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
-<span id="cb39-662"><a href="#cb39-662" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>),</span>
-<span id="cb39-663"><a href="#cb39-663" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
-<span id="cb39-664"><a href="#cb39-664" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using distance"</span>) <span class="sc">+</span></span>
-<span id="cb39-665"><a href="#cb39-665" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Simple Approach"</span>) <span class="sc">+</span></span>
-<span id="cb39-666"><a href="#cb39-666" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
-<span id="cb39-667"><a href="#cb39-667" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-668"><a href="#cb39-668" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-669"><a href="#cb39-669" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-670"><a href="#cb39-670" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb39-671"><a href="#cb39-671" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-672"><a href="#cb39-672" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-673"><a href="#cb39-673" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ninthFigure</span></span>
-<span id="cb39-674"><a href="#cb39-674" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.</span></span>
-<span id="cb39-675"><a href="#cb39-675" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple</span>
-<span id="cb39-676"><a href="#cb39-676" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-677"><a href="#cb39-677" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-678"><a href="#cb39-678" aria-hidden="true" tabindex="-1"></a><span class="fu">## Speed scenario</span></span>
-<span id="cb39-679"><a href="#cb39-679" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-680"><a href="#cb39-680" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for speed approach, output = TRUE}</span></span>
-<span id="cb39-681"><a href="#cb39-681" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
-<span id="cb39-682"><a href="#cb39-682" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_speed, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
-<span id="cb39-683"><a href="#cb39-683" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-684"><a href="#cb39-684" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
-<span id="cb39-685"><a href="#cb39-685" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
-<span id="cb39-686"><a href="#cb39-686" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
-<span id="cb39-687"><a href="#cb39-687" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on speed."</span>) <span class="sc">+</span></span>
-<span id="cb39-688"><a href="#cb39-688" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Speed Approach"</span>) <span class="sc">+</span></span>
-<span id="cb39-689"><a href="#cb39-689" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
-<span id="cb39-690"><a href="#cb39-690" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-691"><a href="#cb39-691" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-692"><a href="#cb39-692" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb39-693"><a href="#cb39-693" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-694"><a href="#cb39-694" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-695"><a href="#cb39-695" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-tenthFigure</span></span>
-<span id="cb39-696"><a href="#cb39-696" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.</span></span>
-<span id="cb39-697"><a href="#cb39-697" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed</span>
-<span id="cb39-698"><a href="#cb39-698" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-699"><a href="#cb39-699" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-700"><a href="#cb39-700" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparision speed and simple scenario</span></span>
-<span id="cb39-701"><a href="#cb39-701" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-702"><a href="#cb39-702" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for comparison of both approaches, output = TRUE}</span></span>
-<span id="cb39-703"><a href="#cb39-703" aria-hidden="true" tabindex="-1"></a>plot_car_em <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_speed, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
-<span id="cb39-704"><a href="#cb39-704" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-705"><a href="#cb39-705" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
-<span id="cb39-706"><a href="#cb39-706" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
-<span id="cb39-707"><a href="#cb39-707" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
-<span id="cb39-708"><a href="#cb39-708" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using speed"</span>) <span class="sc">+</span></span>
-<span id="cb39-709"><a href="#cb39-709" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Speed Approach"</span>) <span class="sc">+</span></span>
-<span id="cb39-710"><a href="#cb39-710" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
-<span id="cb39-711"><a href="#cb39-711" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-712"><a href="#cb39-712" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-713"><a href="#cb39-713" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-714"><a href="#cb39-714" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb39-715"><a href="#cb39-715" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-716"><a href="#cb39-716" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-717"><a href="#cb39-717" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eleventhFigure</span></span>
-<span id="cb39-718"><a href="#cb39-718" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
-<span id="cb39-719"><a href="#cb39-719" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
-<span id="cb39-720"><a href="#cb39-720" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, </span>
-<span id="cb39-721"><a href="#cb39-721" aria-hidden="true" tabindex="-1"></a>             plot_car_em, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb39-722"><a href="#cb39-722" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-723"><a href="#cb39-723" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-724"><a href="#cb39-724" aria-hidden="true" tabindex="-1"></a><span class="in">```{r prepare data to enable comparison with Posmo emission data}</span></span>
-<span id="cb39-725"><a href="#cb39-725" aria-hidden="true" tabindex="-1"></a><span class="co"># add a column transport mode to the calculated car emissions using speed information as well</span></span>
-<span id="cb39-726"><a href="#cb39-726" aria-hidden="true" tabindex="-1"></a>emissions_car_speed <span class="ot">&lt;-</span> emissions_car_speed <span class="sc">|&gt;</span></span>
-<span id="cb39-727"><a href="#cb39-727" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transport_mode =</span> <span class="st">"Car"</span>)</span>
-<span id="cb39-728"><a href="#cb39-728" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-729"><a href="#cb39-729" aria-hidden="true" tabindex="-1"></a>emissions_new <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span></span>
-<span id="cb39-730"><a href="#cb39-730" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove the 'old' emission values for car</span></span>
-<span id="cb39-731"><a href="#cb39-731" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">!=</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-732"><a href="#cb39-732" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace these values with the new car emissions calculated based on speed</span></span>
-<span id="cb39-733"><a href="#cb39-733" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(emissions_car_speed)</span>
-<span id="cb39-734"><a href="#cb39-734" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-735"><a href="#cb39-735" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-736"><a href="#cb39-736" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot average weekly emission, output = TRUE}</span></span>
-<span id="cb39-737"><a href="#cb39-737" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
-<span id="cb39-738"><a href="#cb39-738" aria-hidden="true" tabindex="-1"></a>emissions_plot_speed_car <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_new, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, </span>
-<span id="cb39-739"><a href="#cb39-739" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">fill =</span> transport_mode)) <span class="sc">+</span></span>
-<span id="cb39-740"><a href="#cb39-740" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-741"><a href="#cb39-741" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
-<span id="cb39-742"><a href="#cb39-742" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
-<span id="cb39-743"><a href="#cb39-743" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
-<span id="cb39-744"><a href="#cb39-744" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on speed"</span>) <span class="sc">+</span></span>
-<span id="cb39-745"><a href="#cb39-745" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode and User"</span>)<span class="sc">+</span></span>
-<span id="cb39-746"><a href="#cb39-746" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-747"><a href="#cb39-747" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-748"><a href="#cb39-748" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-749"><a href="#cb39-749" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-750"><a href="#cb39-750" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-751"><a href="#cb39-751" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-twelthFigure</span></span>
-<span id="cb39-752"><a href="#cb39-752" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
-<span id="cb39-753"><a href="#cb39-753" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
-<span id="cb39-754"><a href="#cb39-754" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(emissions_bar_simple <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calcualted based on distance"</span>), emissions_plot_speed_car, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb39-755"><a href="#cb39-755" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-756"><a href="#cb39-756" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-757"><a href="#cb39-757" aria-hidden="true" tabindex="-1"></a><span class="fu">## Slope scenario</span></span>
-<span id="cb39-758"><a href="#cb39-758" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-759"><a href="#cb39-759" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot locations with emission increase due to slope, output = TRUE}</span></span>
-<span id="cb39-760"><a href="#cb39-760" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-thirteenthFigure</span></span>
-<span id="cb39-761"><a href="#cb39-761" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Spatial reference of increase in car CO~2~ emission due to slope. For better visibility, increase values are limited to values between 0.5 and 10%.</span></span>
-<span id="cb39-762"><a href="#cb39-762" aria-hidden="true" tabindex="-1"></a>posmo_car <span class="sc">|&gt;</span> </span>
-<span id="cb39-763"><a href="#cb39-763" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter increase values between 0.5 and 10%</span></span>
-<span id="cb39-764"><a href="#cb39-764" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(emission_increase_perc <span class="sc">&gt;=</span> <span class="fl">0.5</span> <span class="sc">&amp;</span> emission_increase_perc <span class="sc">&lt;=</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-765"><a href="#cb39-765" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb39-766"><a href="#cb39-766" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">color =</span> emission_increase_perc))<span class="sc">+</span></span>
-<span id="cb39-767"><a href="#cb39-767" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> CH_cantons, <span class="at">alpha =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb39-768"><a href="#cb39-768" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Increase in emission due to slope"</span>,</span>
-<span id="cb39-769"><a href="#cb39-769" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Movement trajectories in Switzerland"</span>,</span>
-<span id="cb39-770"><a href="#cb39-770" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"E"</span>,</span>
-<span id="cb39-771"><a href="#cb39-771" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
-<span id="cb39-772"><a href="#cb39-772" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(<span class="at">name =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"emission increase [%]"</span>), <span class="at">type =</span> <span class="st">"viridis"</span>)<span class="sc">+</span></span>
-<span id="cb39-773"><a href="#cb39-773" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
-<span id="cb39-774"><a href="#cb39-774" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-775"><a href="#cb39-775" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-776"><a href="#cb39-776" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-777"><a href="#cb39-777" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-778"><a href="#cb39-778" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison slope with simple and speed scenario</span></span>
-<span id="cb39-779"><a href="#cb39-779" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-780"><a href="#cb39-780" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for comparison of all three approaches, output = TRUE}</span></span>
-<span id="cb39-781"><a href="#cb39-781" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the car emissions with slope considered</span></span>
-<span id="cb39-782"><a href="#cb39-782" aria-hidden="true" tabindex="-1"></a>plot_car_em_slope <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_slope, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w_slope, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
-<span id="cb39-783"><a href="#cb39-783" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-784"><a href="#cb39-784" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>,</span>
-<span id="cb39-785"><a href="#cb39-785" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
-<span id="cb39-786"><a href="#cb39-786" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
-<span id="cb39-787"><a href="#cb39-787" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using slope"</span>) <span class="sc">+</span></span>
-<span id="cb39-788"><a href="#cb39-788" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Slope Approach"</span>) <span class="sc">+</span></span>
-<span id="cb39-789"><a href="#cb39-789" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w_slope, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
-<span id="cb39-790"><a href="#cb39-790" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-791"><a href="#cb39-791" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-792"><a href="#cb39-792" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-793"><a href="#cb39-793" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-794"><a href="#cb39-794" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-795"><a href="#cb39-795" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-796"><a href="#cb39-796" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fourteenthFigure</span></span>
-<span id="cb39-797"><a href="#cb39-797" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.</span></span>
-<span id="cb39-798"><a href="#cb39-798" aria-hidden="true" tabindex="-1"></a><span class="co"># plot all three histograms next to each other</span></span>
-<span id="cb39-799"><a href="#cb39-799" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, plot_car_em, plot_car_em_slope, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb39-800"><a href="#cb39-800" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-801"><a href="#cb39-801" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-802"><a href="#cb39-802" aria-hidden="true" tabindex="-1"></a><span class="in">```{r add car emissions calculated using slope to emission data and create bar chart}</span></span>
-<span id="cb39-803"><a href="#cb39-803" aria-hidden="true" tabindex="-1"></a><span class="co"># add a column transport mode to the calculated car emissions using speed information as well</span></span>
-<span id="cb39-804"><a href="#cb39-804" aria-hidden="true" tabindex="-1"></a>emissions_car_slope <span class="ot">&lt;-</span> emissions_car_slope <span class="sc">|&gt;</span></span>
-<span id="cb39-805"><a href="#cb39-805" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transport_mode =</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-806"><a href="#cb39-806" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="fu">c</span>(user_id, co2_emissions_g_per_w_slope, transport_mode)) <span class="sc">|&gt;</span></span>
-<span id="cb39-807"><a href="#cb39-807" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
-<span id="cb39-808"><a href="#cb39-808" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">co2_emissions_g_per_w =</span> co2_emissions_g_per_w_slope)</span>
-<span id="cb39-809"><a href="#cb39-809" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-810"><a href="#cb39-810" aria-hidden="true" tabindex="-1"></a>emissions_new_slope <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span></span>
-<span id="cb39-811"><a href="#cb39-811" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove the 'old' emission values for car</span></span>
-<span id="cb39-812"><a href="#cb39-812" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">!=</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-813"><a href="#cb39-813" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace these values with the new car emissions calculated based on speed</span></span>
-<span id="cb39-814"><a href="#cb39-814" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(emissions_car_slope)</span>
-<span id="cb39-815"><a href="#cb39-815" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-816"><a href="#cb39-816" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
-<span id="cb39-817"><a href="#cb39-817" aria-hidden="true" tabindex="-1"></a>emissions_plot_slope_car <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_new_slope, </span>
-<span id="cb39-818"><a href="#cb39-818" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">aes</span>(<span class="at">x =</span> user_id, </span>
-<span id="cb39-819"><a href="#cb39-819" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">y =</span> co2_emissions_g_per_w, </span>
-<span id="cb39-820"><a href="#cb39-820" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">fill =</span> transport_mode)) <span class="sc">+</span></span>
-<span id="cb39-821"><a href="#cb39-821" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
-<span id="cb39-822"><a href="#cb39-822" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
-<span id="cb39-823"><a href="#cb39-823" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
-<span id="cb39-824"><a href="#cb39-824" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
-<span id="cb39-825"><a href="#cb39-825" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on slope"</span>) <span class="sc">+</span></span>
-<span id="cb39-826"><a href="#cb39-826" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Total Emissions by User ID and Transportation Mode per Week"</span>) <span class="sc">+</span></span>
-<span id="cb39-827"><a href="#cb39-827" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
-<span id="cb39-828"><a href="#cb39-828" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb39-829"><a href="#cb39-829" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb39-830"><a href="#cb39-830" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
-<span id="cb39-831"><a href="#cb39-831" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-832"><a href="#cb39-832" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-833"><a href="#cb39-833" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}</span></span>
-<span id="cb39-834"><a href="#cb39-834" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fifteenthFigure</span></span>
-<span id="cb39-835"><a href="#cb39-835" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.</span></span>
-<span id="cb39-836"><a href="#cb39-836" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on distance"</span>)</span>
-<span id="cb39-837"><a href="#cb39-837" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-838"><a href="#cb39-838" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sixteenthFigure</span></span>
-<span id="cb39-839"><a href="#cb39-839" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.</span></span>
-<span id="cb39-840"><a href="#cb39-840" aria-hidden="true" tabindex="-1"></a>emissions_plot_speed_car</span>
-<span id="cb39-841"><a href="#cb39-841" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-842"><a href="#cb39-842" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventeenthFigure</span></span>
-<span id="cb39-843"><a href="#cb39-843" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.</span></span>
-<span id="cb39-844"><a href="#cb39-844" aria-hidden="true" tabindex="-1"></a>emissions_plot_slope_car</span>
-<span id="cb39-845"><a href="#cb39-845" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-846"><a href="#cb39-846" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-847"><a href="#cb39-847" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison Posmo emission calculations and our calculations</span></span>
-<span id="cb39-848"><a href="#cb39-848" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-849"><a href="#cb39-849" aria-hidden="true" tabindex="-1"></a>WELCHER DATAFRAME BEINHALTET WELCHE INFOS:</span>
-<span id="cb39-850"><a href="#cb39-850" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-851"><a href="#cb39-851" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. ALLE Emissionen berechnet mittels Distanz*Ausstoss/Distanz.</span>
-<span id="cb39-852"><a href="#cb39-852" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-853"><a href="#cb39-853" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_new: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. AUTOemissionen berechnet unter Miteinbezug der Geschwindigkeit.</span>
-<span id="cb39-854"><a href="#cb39-854" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-855"><a href="#cb39-855" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_new_slope: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. AUTOemissionen berechnet unter Miteinbezug der Steigung in einer bestimmten Geschwindigkeit.</span>
-<span id="cb39-856"><a href="#cb39-856" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-857"><a href="#cb39-857" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_simple: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet mittels Distanz*Ausstoss/Distanz.</span>
+<span id="cb39-653"><a href="#cb39-653" aria-hidden="true" tabindex="-1"></a>*nicht bereits vorhin nach car gefilteret?? braucht es das nochmals?* Das ist ein anderes File. Hier sind die Emissionen berechnet und vorher waren es die ursprünglichen Posmodaten. Also ja ;)</span>
+<span id="cb39-654"><a href="#cb39-654" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-655"><a href="#cb39-655" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for simple approach, output = TRUE}</span></span>
+<span id="cb39-656"><a href="#cb39-656" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the simple emission values to only "Car" values</span></span>
+<span id="cb39-657"><a href="#cb39-657" aria-hidden="true" tabindex="-1"></a>emissions_car_simple <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span> </span>
+<span id="cb39-658"><a href="#cb39-658" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">==</span> <span class="st">"Car"</span>)</span>
+<span id="cb39-659"><a href="#cb39-659" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-660"><a href="#cb39-660" aria-hidden="true" tabindex="-1"></a><span class="co"># create a bar chart for only car emissions</span></span>
+<span id="cb39-661"><a href="#cb39-661" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_simple, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
+<span id="cb39-662"><a href="#cb39-662" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-663"><a href="#cb39-663" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
+<span id="cb39-664"><a href="#cb39-664" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>),</span>
+<span id="cb39-665"><a href="#cb39-665" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
+<span id="cb39-666"><a href="#cb39-666" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using distance"</span>) <span class="sc">+</span></span>
+<span id="cb39-667"><a href="#cb39-667" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Simple Approach"</span>) <span class="sc">+</span></span>
+<span id="cb39-668"><a href="#cb39-668" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb39-669"><a href="#cb39-669" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-670"><a href="#cb39-670" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-671"><a href="#cb39-671" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-672"><a href="#cb39-672" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb39-673"><a href="#cb39-673" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb39-674"><a href="#cb39-674" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb39-675"><a href="#cb39-675" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb39-676"><a href="#cb39-676" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-677"><a href="#cb39-677" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ninthFigure</span></span>
+<span id="cb39-678"><a href="#cb39-678" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.</span></span>
+<span id="cb39-679"><a href="#cb39-679" aria-hidden="true" tabindex="-1"></a>plot_car_em_simple</span>
+<span id="cb39-680"><a href="#cb39-680" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-681"><a href="#cb39-681" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-682"><a href="#cb39-682" aria-hidden="true" tabindex="-1"></a><span class="fu">## Speed scenario</span></span>
+<span id="cb39-683"><a href="#cb39-683" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-684"><a href="#cb39-684" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for speed approach, output = TRUE}</span></span>
+<span id="cb39-685"><a href="#cb39-685" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
+<span id="cb39-686"><a href="#cb39-686" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_speed, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
+<span id="cb39-687"><a href="#cb39-687" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-688"><a href="#cb39-688" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
+<span id="cb39-689"><a href="#cb39-689" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
+<span id="cb39-690"><a href="#cb39-690" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
+<span id="cb39-691"><a href="#cb39-691" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on speed."</span>) <span class="sc">+</span></span>
+<span id="cb39-692"><a href="#cb39-692" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Speed Approach"</span>) <span class="sc">+</span></span>
+<span id="cb39-693"><a href="#cb39-693" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb39-694"><a href="#cb39-694" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-695"><a href="#cb39-695" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-696"><a href="#cb39-696" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb39-697"><a href="#cb39-697" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb39-698"><a href="#cb39-698" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb39-699"><a href="#cb39-699" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb39-700"><a href="#cb39-700" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-701"><a href="#cb39-701" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-tenthFigure</span></span>
+<span id="cb39-702"><a href="#cb39-702" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.</span></span>
+<span id="cb39-703"><a href="#cb39-703" aria-hidden="true" tabindex="-1"></a>emissions_bar_speed</span>
+<span id="cb39-704"><a href="#cb39-704" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-705"><a href="#cb39-705" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-706"><a href="#cb39-706" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparision speed and simple scenario</span></span>
+<span id="cb39-707"><a href="#cb39-707" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-708"><a href="#cb39-708" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for comparison of both approaches, output = TRUE}</span></span>
+<span id="cb39-709"><a href="#cb39-709" aria-hidden="true" tabindex="-1"></a>plot_car_em <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_speed, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
+<span id="cb39-710"><a href="#cb39-710" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-711"><a href="#cb39-711" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
+<span id="cb39-712"><a href="#cb39-712" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
+<span id="cb39-713"><a href="#cb39-713" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
+<span id="cb39-714"><a href="#cb39-714" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using speed"</span>) <span class="sc">+</span></span>
+<span id="cb39-715"><a href="#cb39-715" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Speed Approach"</span>) <span class="sc">+</span></span>
+<span id="cb39-716"><a href="#cb39-716" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb39-717"><a href="#cb39-717" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-718"><a href="#cb39-718" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-719"><a href="#cb39-719" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-720"><a href="#cb39-720" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb39-721"><a href="#cb39-721" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb39-722"><a href="#cb39-722" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb39-723"><a href="#cb39-723" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb39-724"><a href="#cb39-724" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-725"><a href="#cb39-725" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eleventhFigure</span></span>
+<span id="cb39-726"><a href="#cb39-726" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
+<span id="cb39-727"><a href="#cb39-727" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
+<span id="cb39-728"><a href="#cb39-728" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, </span>
+<span id="cb39-729"><a href="#cb39-729" aria-hidden="true" tabindex="-1"></a>             plot_car_em, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb39-730"><a href="#cb39-730" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-731"><a href="#cb39-731" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-732"><a href="#cb39-732" aria-hidden="true" tabindex="-1"></a><span class="in">```{r prepare data to enable comparison with Posmo emission data}</span></span>
+<span id="cb39-733"><a href="#cb39-733" aria-hidden="true" tabindex="-1"></a><span class="co"># add a column transport mode to the calculated car emissions using speed information as well</span></span>
+<span id="cb39-734"><a href="#cb39-734" aria-hidden="true" tabindex="-1"></a>emissions_car_speed <span class="ot">&lt;-</span> emissions_car_speed <span class="sc">|&gt;</span></span>
+<span id="cb39-735"><a href="#cb39-735" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transport_mode =</span> <span class="st">"Car"</span>)</span>
+<span id="cb39-736"><a href="#cb39-736" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-737"><a href="#cb39-737" aria-hidden="true" tabindex="-1"></a>emissions_new <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span></span>
+<span id="cb39-738"><a href="#cb39-738" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove the 'old' emission values for car</span></span>
+<span id="cb39-739"><a href="#cb39-739" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">!=</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-740"><a href="#cb39-740" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace these values with the new car emissions calculated based on speed</span></span>
+<span id="cb39-741"><a href="#cb39-741" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(emissions_car_speed)</span>
+<span id="cb39-742"><a href="#cb39-742" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-743"><a href="#cb39-743" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-744"><a href="#cb39-744" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot average weekly emission, output = TRUE}</span></span>
+<span id="cb39-745"><a href="#cb39-745" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
+<span id="cb39-746"><a href="#cb39-746" aria-hidden="true" tabindex="-1"></a>emissions_plot_speed_car <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_new, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w, </span>
+<span id="cb39-747"><a href="#cb39-747" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">fill =</span> transport_mode)) <span class="sc">+</span></span>
+<span id="cb39-748"><a href="#cb39-748" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-749"><a href="#cb39-749" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
+<span id="cb39-750"><a href="#cb39-750" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
+<span id="cb39-751"><a href="#cb39-751" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
+<span id="cb39-752"><a href="#cb39-752" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on speed"</span>) <span class="sc">+</span></span>
+<span id="cb39-753"><a href="#cb39-753" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weeky Emissions per Transportation Mode &amp; User"</span>)<span class="sc">+</span></span>
+<span id="cb39-754"><a href="#cb39-754" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-755"><a href="#cb39-755" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-756"><a href="#cb39-756" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-757"><a href="#cb39-757" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb39-758"><a href="#cb39-758" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>))</span>
+<span id="cb39-759"><a href="#cb39-759" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-760"><a href="#cb39-760" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-twelthFigure</span></span>
+<span id="cb39-761"><a href="#cb39-761" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).</span></span>
+<span id="cb39-762"><a href="#cb39-762" aria-hidden="true" tabindex="-1"></a><span class="co"># plot them next to each other</span></span>
+<span id="cb39-763"><a href="#cb39-763" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(emissions_bar_simple, emissions_plot_speed_car, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb39-764"><a href="#cb39-764" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-765"><a href="#cb39-765" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-766"><a href="#cb39-766" aria-hidden="true" tabindex="-1"></a><span class="fu">## Slope scenario</span></span>
+<span id="cb39-767"><a href="#cb39-767" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-768"><a href="#cb39-768" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot locations with emission increase due to slope, output = TRUE}</span></span>
+<span id="cb39-769"><a href="#cb39-769" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-thirteenthFigure</span></span>
+<span id="cb39-770"><a href="#cb39-770" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Spatial reference of increase in car CO~2~ emission due to slope. For better visibility, increase values are limited to values between 0.5 and 10%.</span></span>
+<span id="cb39-771"><a href="#cb39-771" aria-hidden="true" tabindex="-1"></a>posmo_car <span class="sc">|&gt;</span> </span>
+<span id="cb39-772"><a href="#cb39-772" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter increase values between 0.5 and 10%</span></span>
+<span id="cb39-773"><a href="#cb39-773" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(emission_increase_perc <span class="sc">&gt;=</span> <span class="fl">0.5</span> <span class="sc">&amp;</span> emission_increase_perc <span class="sc">&lt;=</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-774"><a href="#cb39-774" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb39-775"><a href="#cb39-775" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">color =</span> emission_increase_perc))<span class="sc">+</span></span>
+<span id="cb39-776"><a href="#cb39-776" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> CH_cantons, <span class="at">alpha =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb39-777"><a href="#cb39-777" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Increase in emission due to slope"</span>,</span>
+<span id="cb39-778"><a href="#cb39-778" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Movement trajectories in Switzerland"</span>,</span>
+<span id="cb39-779"><a href="#cb39-779" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"E"</span>,</span>
+<span id="cb39-780"><a href="#cb39-780" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
+<span id="cb39-781"><a href="#cb39-781" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(<span class="at">name =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"emission increase [%]"</span>), <span class="at">type =</span> <span class="st">"viridis"</span>)<span class="sc">+</span></span>
+<span id="cb39-782"><a href="#cb39-782" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
+<span id="cb39-783"><a href="#cb39-783" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-784"><a href="#cb39-784" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>))</span>
+<span id="cb39-785"><a href="#cb39-785" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-786"><a href="#cb39-786" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-787"><a href="#cb39-787" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison slope with simple and speed scenario</span></span>
+<span id="cb39-788"><a href="#cb39-788" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-789"><a href="#cb39-789" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot overall emission of car for comparison of all three approaches, output = TRUE}</span></span>
+<span id="cb39-790"><a href="#cb39-790" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the car emissions with slope considered</span></span>
+<span id="cb39-791"><a href="#cb39-791" aria-hidden="true" tabindex="-1"></a>plot_car_em_slope <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_car_slope, <span class="fu">aes</span>(<span class="at">x =</span> user_id, <span class="at">y =</span> co2_emissions_g_per_w_slope, <span class="at">fill =</span> user_id)) <span class="sc">+</span></span>
+<span id="cb39-792"><a href="#cb39-792" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-793"><a href="#cb39-793" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>,</span>
+<span id="cb39-794"><a href="#cb39-794" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
+<span id="cb39-795"><a href="#cb39-795" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"User"</span>,</span>
+<span id="cb39-796"><a href="#cb39-796" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated using slope"</span>) <span class="sc">+</span></span>
+<span id="cb39-797"><a href="#cb39-797" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Overall Car Emissions for Slope Approach"</span>) <span class="sc">+</span></span>
+<span id="cb39-798"><a href="#cb39-798" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(co2_emissions_g_per_w_slope, <span class="dv">1</span>)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">vjust =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb39-799"><a href="#cb39-799" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-800"><a href="#cb39-800" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-801"><a href="#cb39-801" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-802"><a href="#cb39-802" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>),</span>
+<span id="cb39-803"><a href="#cb39-803" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-804"><a href="#cb39-804" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb39-805"><a href="#cb39-805" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>))</span>
+<span id="cb39-806"><a href="#cb39-806" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-807"><a href="#cb39-807" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fourteenthFigure</span></span>
+<span id="cb39-808"><a href="#cb39-808" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.</span></span>
+<span id="cb39-809"><a href="#cb39-809" aria-hidden="true" tabindex="-1"></a><span class="co"># plot all three histograms next to each other</span></span>
+<span id="cb39-810"><a href="#cb39-810" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot_car_em_simple, plot_car_em, plot_car_em_slope, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb39-811"><a href="#cb39-811" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-812"><a href="#cb39-812" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-813"><a href="#cb39-813" aria-hidden="true" tabindex="-1"></a><span class="in">```{r add car emissions calculated using slope to emission data and create bar chart}</span></span>
+<span id="cb39-814"><a href="#cb39-814" aria-hidden="true" tabindex="-1"></a><span class="co"># add a column transport mode to the calculated car emissions using speed information as well</span></span>
+<span id="cb39-815"><a href="#cb39-815" aria-hidden="true" tabindex="-1"></a>emissions_car_slope <span class="ot">&lt;-</span> emissions_car_slope <span class="sc">|&gt;</span></span>
+<span id="cb39-816"><a href="#cb39-816" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transport_mode =</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-817"><a href="#cb39-817" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="fu">c</span>(user_id, co2_emissions_g_per_w_slope, transport_mode)) <span class="sc">|&gt;</span></span>
+<span id="cb39-818"><a href="#cb39-818" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb39-819"><a href="#cb39-819" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">co2_emissions_g_per_w =</span> co2_emissions_g_per_w_slope)</span>
+<span id="cb39-820"><a href="#cb39-820" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-821"><a href="#cb39-821" aria-hidden="true" tabindex="-1"></a>emissions_new_slope <span class="ot">&lt;-</span> emissions <span class="sc">|&gt;</span></span>
+<span id="cb39-822"><a href="#cb39-822" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove the 'old' emission values for car</span></span>
+<span id="cb39-823"><a href="#cb39-823" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transport_mode <span class="sc">!=</span> <span class="st">"Car"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-824"><a href="#cb39-824" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace these values with the new car emissions calculated based on speed</span></span>
+<span id="cb39-825"><a href="#cb39-825" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(emissions_car_slope)</span>
+<span id="cb39-826"><a href="#cb39-826" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-827"><a href="#cb39-827" aria-hidden="true" tabindex="-1"></a><span class="co"># create the bar chart</span></span>
+<span id="cb39-828"><a href="#cb39-828" aria-hidden="true" tabindex="-1"></a>emissions_plot_slope_car <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(emissions_new_slope, </span>
+<span id="cb39-829"><a href="#cb39-829" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">aes</span>(<span class="at">x =</span> user_id, </span>
+<span id="cb39-830"><a href="#cb39-830" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">y =</span> co2_emissions_g_per_w, </span>
+<span id="cb39-831"><a href="#cb39-831" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">fill =</span> transport_mode)) <span class="sc">+</span></span>
+<span id="cb39-832"><a href="#cb39-832" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb39-833"><a href="#cb39-833" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Users"</span>, </span>
+<span id="cb39-834"><a href="#cb39-834" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"CO"</span>[<span class="st">"2"</span>]<span class="sc">~</span> <span class="st">"Emissions [g/week]"</span>), </span>
+<span id="cb39-835"><a href="#cb39-835" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Transport Mode"</span>,</span>
+<span id="cb39-836"><a href="#cb39-836" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on slope"</span>) <span class="sc">+</span></span>
+<span id="cb39-837"><a href="#cb39-837" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Average Weekly Emissions per Transport Mode &amp; User"</span>) <span class="sc">+</span></span>
+<span id="cb39-838"><a href="#cb39-838" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">27000</span>)<span class="sc">+</span></span>
+<span id="cb39-839"><a href="#cb39-839" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb39-840"><a href="#cb39-840" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-841"><a href="#cb39-841" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb39-842"><a href="#cb39-842" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>))</span>
+<span id="cb39-843"><a href="#cb39-843" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-844"><a href="#cb39-844" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-845"><a href="#cb39-845" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}</span></span>
+<span id="cb39-846"><a href="#cb39-846" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fifteenthFigure</span></span>
+<span id="cb39-847"><a href="#cb39-847" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.</span></span>
+<span id="cb39-848"><a href="#cb39-848" aria-hidden="true" tabindex="-1"></a>emissions_bar_simple <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Car emissions calculated based on distance"</span>)</span>
+<span id="cb39-849"><a href="#cb39-849" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-850"><a href="#cb39-850" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sixteenthFigure</span></span>
+<span id="cb39-851"><a href="#cb39-851" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.</span></span>
+<span id="cb39-852"><a href="#cb39-852" aria-hidden="true" tabindex="-1"></a>emissions_plot_speed_car</span>
+<span id="cb39-853"><a href="#cb39-853" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-854"><a href="#cb39-854" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-seventeenthFigure</span></span>
+<span id="cb39-855"><a href="#cb39-855" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.</span></span>
+<span id="cb39-856"><a href="#cb39-856" aria-hidden="true" tabindex="-1"></a>emissions_plot_slope_car</span>
+<span id="cb39-857"><a href="#cb39-857" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb39-858"><a href="#cb39-858" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-859"><a href="#cb39-859" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_speed: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet berechnet unter Miteinbezug der Geschwindigkeit.</span>
+<span id="cb39-859"><a href="#cb39-859" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison Posmo emission calculations and our calculations</span></span>
 <span id="cb39-860"><a href="#cb39-860" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-861"><a href="#cb39-861" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_slope: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet berechnet unter Miteinbezug der Geschwindigkeit.</span>
+<span id="cb39-861"><a href="#cb39-861" aria-hidden="true" tabindex="-1"></a>WELCHER DATAFRAME BEINHALTET WELCHE INFOS:</span>
 <span id="cb39-862"><a href="#cb39-862" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-863"><a href="#cb39-863" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-864"><a href="#cb39-864" aria-hidden="true" tabindex="-1"></a><span class="in">```{r calculate daily emissions}</span></span>
-<span id="cb39-865"><a href="#cb39-865" aria-hidden="true" tabindex="-1"></a><span class="co"># define a function to get the daily emissions</span></span>
-<span id="cb39-866"><a href="#cb39-866" aria-hidden="true" tabindex="-1"></a>dailyEmission <span class="ot">&lt;-</span> <span class="cf">function</span>(posmo_data, constants){</span>
-<span id="cb39-867"><a href="#cb39-867" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make sure Date is provided as date and not as datetime</span></span>
-<span id="cb39-868"><a href="#cb39-868" aria-hidden="true" tabindex="-1"></a>  posmo_data<span class="sc">$</span>day <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(posmo_data<span class="sc">$</span>datetime)</span>
-<span id="cb39-869"><a href="#cb39-869" aria-hidden="true" tabindex="-1"></a>  daily_distance <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(distance_km <span class="sc">~</span> user_id <span class="sc">+</span> day <span class="sc">+</span> transport_mode, posmo_data, <span class="at">FUN =</span> sum)</span>
-<span id="cb39-870"><a href="#cb39-870" aria-hidden="true" tabindex="-1"></a>  daily_emission <span class="ot">&lt;-</span> daily_distance <span class="sc">|&gt;</span></span>
-<span id="cb39-871"><a href="#cb39-871" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(constants, <span class="at">by =</span> <span class="st">"transport_mode"</span>)</span>
-<span id="cb39-872"><a href="#cb39-872" aria-hidden="true" tabindex="-1"></a>  daily_emission <span class="ot">&lt;-</span> daily_emission <span class="sc">|&gt;</span></span>
-<span id="cb39-873"><a href="#cb39-873" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb39-874"><a href="#cb39-874" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_emission_kg =</span> distance_km <span class="sc">*</span> avg <span class="sc">/</span> <span class="dv">1000</span>,</span>
-<span id="cb39-875"><a href="#cb39-875" aria-hidden="true" tabindex="-1"></a>      <span class="at">min_emission_kg =</span> distance_km <span class="sc">*</span> min <span class="sc">/</span> <span class="dv">1000</span>,</span>
-<span id="cb39-876"><a href="#cb39-876" aria-hidden="true" tabindex="-1"></a>      <span class="at">max_emission_kg =</span> distance_km <span class="sc">*</span> max <span class="sc">/</span> <span class="dv">1000</span>,</span>
-<span id="cb39-877"><a href="#cb39-877" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb39-878"><a href="#cb39-878" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(daily_emission)</span>
-<span id="cb39-879"><a href="#cb39-879" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb39-880"><a href="#cb39-880" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-881"><a href="#cb39-881" aria-hidden="true" tabindex="-1"></a>daily_emission <span class="ot">&lt;-</span> <span class="fu">dailyEmission</span>(posmo, constants_emission)</span>
-<span id="cb39-882"><a href="#cb39-882" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-883"><a href="#cb39-883" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-884"><a href="#cb39-884" aria-hidden="true" tabindex="-1"></a><span class="in">```{r read in emission values from Posmo, message = FALSE}</span></span>
-<span id="cb39-885"><a href="#cb39-885" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-886"><a href="#cb39-886" aria-hidden="true" tabindex="-1"></a>posmo_emission_1 <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"data/Emission_Posmo_1.csv"</span>, <span class="at">delim =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-887"><a href="#cb39-887" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb39-888"><a href="#cb39-888" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="st">"1af6fc8e-273d-4889-894b-5dadadd70a01"</span>,</span>
-<span id="cb39-889"><a href="#cb39-889" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> <span class="fu">dmy</span>(Date)</span>
-<span id="cb39-890"><a href="#cb39-890" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb39-891"><a href="#cb39-891" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-892"><a href="#cb39-892" aria-hidden="true" tabindex="-1"></a>posmo_emission_2 <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"data/Emission_Posmo_2.csv"</span>, <span class="at">delim =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-893"><a href="#cb39-893" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb39-894"><a href="#cb39-894" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="st">"6e119464-37a3-4d4e-9eaf-ef1b7e137b60"</span>,</span>
-<span id="cb39-895"><a href="#cb39-895" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> <span class="fu">dmy</span>(Date)</span>
-<span id="cb39-896"><a href="#cb39-896" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb39-863"><a href="#cb39-863" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. ALLE Emissionen berechnet mittels Distanz*Ausstoss/Distanz.</span>
+<span id="cb39-864"><a href="#cb39-864" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-865"><a href="#cb39-865" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_new: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. AUTOemissionen berechnet unter Miteinbezug der Geschwindigkeit.</span>
+<span id="cb39-866"><a href="#cb39-866" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-867"><a href="#cb39-867" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_new_slope: Emissionen in g/Woche für jede ID und jedes Transportmittel separat. AUTOemissionen berechnet unter Miteinbezug der Steigung in einer bestimmten Geschwindigkeit.</span>
+<span id="cb39-868"><a href="#cb39-868" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-869"><a href="#cb39-869" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_simple: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet mittels Distanz*Ausstoss/Distanz.</span>
+<span id="cb39-870"><a href="#cb39-870" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-871"><a href="#cb39-871" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_speed: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet berechnet unter Miteinbezug der Geschwindigkeit.</span>
+<span id="cb39-872"><a href="#cb39-872" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-873"><a href="#cb39-873" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>emissions_car_slope: Emissionen in g/Woche für jede ID und nur Autoemissionen. Emissionen berechnet berechnet unter Miteinbezug der Geschwindigkeit.</span>
+<span id="cb39-874"><a href="#cb39-874" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-875"><a href="#cb39-875" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-876"><a href="#cb39-876" aria-hidden="true" tabindex="-1"></a><span class="in">```{r calculate daily emissions}</span></span>
+<span id="cb39-877"><a href="#cb39-877" aria-hidden="true" tabindex="-1"></a><span class="co"># define a function to get the daily emissions</span></span>
+<span id="cb39-878"><a href="#cb39-878" aria-hidden="true" tabindex="-1"></a>dailyEmission <span class="ot">&lt;-</span> <span class="cf">function</span>(posmo_data, constants){</span>
+<span id="cb39-879"><a href="#cb39-879" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make sure Date is provided as date and not as datetime</span></span>
+<span id="cb39-880"><a href="#cb39-880" aria-hidden="true" tabindex="-1"></a>  posmo_data<span class="sc">$</span>day <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(posmo_data<span class="sc">$</span>datetime)</span>
+<span id="cb39-881"><a href="#cb39-881" aria-hidden="true" tabindex="-1"></a>  daily_distance <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(distance_km <span class="sc">~</span> user_id <span class="sc">+</span> day <span class="sc">+</span> transport_mode, posmo_data, <span class="at">FUN =</span> sum)</span>
+<span id="cb39-882"><a href="#cb39-882" aria-hidden="true" tabindex="-1"></a>  daily_emission <span class="ot">&lt;-</span> daily_distance <span class="sc">|&gt;</span></span>
+<span id="cb39-883"><a href="#cb39-883" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(constants, <span class="at">by =</span> <span class="st">"transport_mode"</span>)</span>
+<span id="cb39-884"><a href="#cb39-884" aria-hidden="true" tabindex="-1"></a>  daily_emission <span class="ot">&lt;-</span> daily_emission <span class="sc">|&gt;</span></span>
+<span id="cb39-885"><a href="#cb39-885" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb39-886"><a href="#cb39-886" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_emission_kg =</span> distance_km <span class="sc">*</span> avg <span class="sc">/</span> <span class="dv">1000</span>,</span>
+<span id="cb39-887"><a href="#cb39-887" aria-hidden="true" tabindex="-1"></a>      <span class="at">min_emission_kg =</span> distance_km <span class="sc">*</span> min <span class="sc">/</span> <span class="dv">1000</span>,</span>
+<span id="cb39-888"><a href="#cb39-888" aria-hidden="true" tabindex="-1"></a>      <span class="at">max_emission_kg =</span> distance_km <span class="sc">*</span> max <span class="sc">/</span> <span class="dv">1000</span>,</span>
+<span id="cb39-889"><a href="#cb39-889" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb39-890"><a href="#cb39-890" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(daily_emission)</span>
+<span id="cb39-891"><a href="#cb39-891" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb39-892"><a href="#cb39-892" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-893"><a href="#cb39-893" aria-hidden="true" tabindex="-1"></a>daily_emission <span class="ot">&lt;-</span> <span class="fu">dailyEmission</span>(posmo, constants_emission)</span>
+<span id="cb39-894"><a href="#cb39-894" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-895"><a href="#cb39-895" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-896"><a href="#cb39-896" aria-hidden="true" tabindex="-1"></a><span class="in">```{r read in emission values from Posmo, message = FALSE}</span></span>
 <span id="cb39-897"><a href="#cb39-897" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-898"><a href="#cb39-898" aria-hidden="true" tabindex="-1"></a>posmo_emission <span class="ot">&lt;-</span> <span class="fu">rbind</span>(posmo_emission_1, posmo_emission_2)</span>
-<span id="cb39-899"><a href="#cb39-899" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-900"><a href="#cb39-900" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-901"><a href="#cb39-901" aria-hidden="true" tabindex="-1"></a><span class="in">```{r summed Posmo emission}</span></span>
-<span id="cb39-902"><a href="#cb39-902" aria-hidden="true" tabindex="-1"></a>emission_avg <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(avg_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
-<span id="cb39-903"><a href="#cb39-903" aria-hidden="true" tabindex="-1"></a>emission_min <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(min_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
-<span id="cb39-904"><a href="#cb39-904" aria-hidden="true" tabindex="-1"></a>emission_max <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(max_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
-<span id="cb39-905"><a href="#cb39-905" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-906"><a href="#cb39-906" aria-hidden="true" tabindex="-1"></a>emission_CH_sum <span class="ot">&lt;-</span> <span class="fu">left_join</span>(emission_avg, emission_min, <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-907"><a href="#cb39-907" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(emission_max, <span class="at">by =</span> <span class="st">"user_id"</span>)</span>
-<span id="cb39-908"><a href="#cb39-908" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-909"><a href="#cb39-909" aria-hidden="true" tabindex="-1"></a>emission_posmo_sum <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(Sum_CH <span class="sc">~</span> user_id, posmo_emission, sum)</span>
-<span id="cb39-910"><a href="#cb39-910" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-911"><a href="#cb39-911" aria-hidden="true" tabindex="-1"></a>emission_cal_posmo <span class="ot">&lt;-</span> <span class="fu">left_join</span>(emission_posmo_sum, emission_CH_sum, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"user_id"</span>))</span>
-<span id="cb39-912"><a href="#cb39-912" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb39-913"><a href="#cb39-913" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-914"><a href="#cb39-914" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-917"><a href="#cb39-917" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb39-918"><a href="#cb39-918" aria-hidden="true" tabindex="-1"></a>overallEmissionPosmo <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column_name){</span>
-<span id="cb39-919"><a href="#cb39-919" aria-hidden="true" tabindex="-1"></a>  df_new <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(df[column_name], <span class="at">by =</span> <span class="fu">list</span>(<span class="at">user_id =</span> df<span class="sc">$</span>user_id), <span class="at">FUN =</span> sum)</span>
-<span id="cb39-920"><a href="#cb39-920" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df_new)</span>
-<span id="cb39-921"><a href="#cb39-921" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb39-922"><a href="#cb39-922" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-923"><a href="#cb39-923" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-926"><a href="#cb39-926" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb39-927"><a href="#cb39-927" aria-hidden="true" tabindex="-1"></a>posmo_emission_mode <span class="ot">&lt;-</span> <span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Car [kg]"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-928"><a href="#cb39-928" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Train [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-929"><a href="#cb39-929" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Bus [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-930"><a href="#cb39-930" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Tram [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-931"><a href="#cb39-931" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Bike [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb39-932"><a href="#cb39-932" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"E_Bike [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>)</span>
-<span id="cb39-933"><a href="#cb39-933" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-934"><a href="#cb39-934" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-898"><a href="#cb39-898" aria-hidden="true" tabindex="-1"></a>posmo_emission_1 <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"data/Emission_Posmo_1.csv"</span>, <span class="at">delim =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-899"><a href="#cb39-899" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb39-900"><a href="#cb39-900" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="st">"1af6fc8e-273d-4889-894b-5dadadd70a01"</span>,</span>
+<span id="cb39-901"><a href="#cb39-901" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> <span class="fu">dmy</span>(Date)</span>
+<span id="cb39-902"><a href="#cb39-902" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb39-903"><a href="#cb39-903" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-904"><a href="#cb39-904" aria-hidden="true" tabindex="-1"></a>posmo_emission_2 <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"data/Emission_Posmo_2.csv"</span>, <span class="at">delim =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-905"><a href="#cb39-905" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb39-906"><a href="#cb39-906" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="st">"6e119464-37a3-4d4e-9eaf-ef1b7e137b60"</span>,</span>
+<span id="cb39-907"><a href="#cb39-907" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> <span class="fu">dmy</span>(Date)</span>
+<span id="cb39-908"><a href="#cb39-908" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb39-909"><a href="#cb39-909" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-910"><a href="#cb39-910" aria-hidden="true" tabindex="-1"></a>posmo_emission <span class="ot">&lt;-</span> <span class="fu">rbind</span>(posmo_emission_1, posmo_emission_2)</span>
+<span id="cb39-911"><a href="#cb39-911" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-912"><a href="#cb39-912" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-913"><a href="#cb39-913" aria-hidden="true" tabindex="-1"></a><span class="in">```{r summed Posmo emission}</span></span>
+<span id="cb39-914"><a href="#cb39-914" aria-hidden="true" tabindex="-1"></a>emission_avg <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(avg_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
+<span id="cb39-915"><a href="#cb39-915" aria-hidden="true" tabindex="-1"></a>emission_min <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(min_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
+<span id="cb39-916"><a href="#cb39-916" aria-hidden="true" tabindex="-1"></a>emission_max <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(max_emission_kg <span class="sc">~</span> user_id, daily_emission, sum)</span>
+<span id="cb39-917"><a href="#cb39-917" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-918"><a href="#cb39-918" aria-hidden="true" tabindex="-1"></a>emission_CH_sum <span class="ot">&lt;-</span> <span class="fu">left_join</span>(emission_avg, emission_min, <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-919"><a href="#cb39-919" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(emission_max, <span class="at">by =</span> <span class="st">"user_id"</span>)</span>
+<span id="cb39-920"><a href="#cb39-920" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-921"><a href="#cb39-921" aria-hidden="true" tabindex="-1"></a>emission_posmo_sum <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(Sum_CH <span class="sc">~</span> user_id, posmo_emission, sum)</span>
+<span id="cb39-922"><a href="#cb39-922" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-923"><a href="#cb39-923" aria-hidden="true" tabindex="-1"></a>emission_cal_posmo <span class="ot">&lt;-</span> <span class="fu">left_join</span>(emission_posmo_sum, emission_CH_sum, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"user_id"</span>))</span>
+<span id="cb39-924"><a href="#cb39-924" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-925"><a href="#cb39-925" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-926"><a href="#cb39-926" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-929"><a href="#cb39-929" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb39-930"><a href="#cb39-930" aria-hidden="true" tabindex="-1"></a>overallEmissionPosmo <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column_name){</span>
+<span id="cb39-931"><a href="#cb39-931" aria-hidden="true" tabindex="-1"></a>  df_new <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(df[column_name], <span class="at">by =</span> <span class="fu">list</span>(<span class="at">user_id =</span> df<span class="sc">$</span>user_id), <span class="at">FUN =</span> sum)</span>
+<span id="cb39-932"><a href="#cb39-932" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df_new)</span>
+<span id="cb39-933"><a href="#cb39-933" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb39-934"><a href="#cb39-934" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb39-935"><a href="#cb39-935" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-936"><a href="#cb39-936" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot comparison between our calculated emission and the Posmo emission, output = TRUE}</span></span>
-<span id="cb39-937"><a href="#cb39-937" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eighteenthFigure</span></span>
-<span id="cb39-938"><a href="#cb39-938" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: PLEASE INSERT YOUR FIGURE CAPTION.</span></span>
-<span id="cb39-939"><a href="#cb39-939" aria-hidden="true" tabindex="-1"></a>emission_cal_posmo <span class="sc">|&gt;</span></span>
-<span id="cb39-940"><a href="#cb39-940" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> user_id)) <span class="sc">+</span></span>
-<span id="cb39-941"><a href="#cb39-941" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> min_emission_kg, <span class="at">ymax =</span> max_emission_kg, <span class="at">x =</span> user_id),</span>
-<span id="cb39-942"><a href="#cb39-942" aria-hidden="true" tabindex="-1"></a>                 <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">alpha =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
-<span id="cb39-943"><a href="#cb39-943" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_point(aes(y = min_emission_kg), colour = "#CB5416") +</span></span>
-<span id="cb39-944"><a href="#cb39-944" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_point(aes(y = max_emission_kg), colour = "#267266") +</span></span>
-<span id="cb39-945"><a href="#cb39-945" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> Sum_CH), <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb39-946"><a href="#cb39-946" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
-<span id="cb39-947"><a href="#cb39-947" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Emission"</span>) <span class="sc">+</span></span>
-<span id="cb39-948"><a href="#cb39-948" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
-<span id="cb39-949"><a href="#cb39-949" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.y =</span> <span class="fu">element_blank</span>())</span>
-<span id="cb39-950"><a href="#cb39-950" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-951"><a href="#cb39-951" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-952"><a href="#cb39-952" aria-hidden="true" tabindex="-1"></a><span class="fu"># Discussion</span></span>
-<span id="cb39-953"><a href="#cb39-953" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-954"><a href="#cb39-954" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations</span></span>
-<span id="cb39-955"><a href="#cb39-955" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-956"><a href="#cb39-956" aria-hidden="true" tabindex="-1"></a>Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. </span>
-<span id="cb39-957"><a href="#cb39-957" aria-hidden="true" tabindex="-1"></a>Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. Due to theses inaccuracies we excluded all the outliers which led to a reduced amount of data and assumptions we had to make. Another limitations concerning our data was that we only had data sets of three different users which may have not represented the grand public well.</span>
-<span id="cb39-958"><a href="#cb39-958" aria-hidden="true" tabindex="-1"></a>Further, we used very simplified approaches to calculate the emissions. We considered various sources for the emission constants in the </span>
-<span id="cb39-959"><a href="#cb39-959" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-960"><a href="#cb39-960" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>simple methods</span>
-<span id="cb39-961"><a href="#cb39-961" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>many assumptions</span>
-<span id="cb39-962"><a href="#cb39-962" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>averaging over car types/fuel types, etc.</span>
+<span id="cb39-938"><a href="#cb39-938" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb39-939"><a href="#cb39-939" aria-hidden="true" tabindex="-1"></a>posmo_emission_mode <span class="ot">&lt;-</span> <span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Car [kg]"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-940"><a href="#cb39-940" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Train [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-941"><a href="#cb39-941" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Bus [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-942"><a href="#cb39-942" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Tram [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-943"><a href="#cb39-943" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"Bike [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb39-944"><a href="#cb39-944" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">overallEmissionPosmo</span>(posmo_emission, <span class="st">"E_Bike [kg]"</span>), <span class="at">by =</span> <span class="st">"user_id"</span>)</span>
+<span id="cb39-945"><a href="#cb39-945" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-946"><a href="#cb39-946" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-947"><a href="#cb39-947" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-948"><a href="#cb39-948" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot comparison between our calculated emission and the Posmo emission, output = TRUE}</span></span>
+<span id="cb39-949"><a href="#cb39-949" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-eighteenthFigure</span></span>
+<span id="cb39-950"><a href="#cb39-950" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: PLEASE INSERT YOUR FIGURE CAPTION.</span></span>
+<span id="cb39-951"><a href="#cb39-951" aria-hidden="true" tabindex="-1"></a>emission_cal_posmo <span class="sc">|&gt;</span></span>
+<span id="cb39-952"><a href="#cb39-952" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> user_id)) <span class="sc">+</span></span>
+<span id="cb39-953"><a href="#cb39-953" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> min_emission_kg, <span class="at">ymax =</span> max_emission_kg, <span class="at">x =</span> user_id),</span>
+<span id="cb39-954"><a href="#cb39-954" aria-hidden="true" tabindex="-1"></a>                 <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">alpha =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb39-955"><a href="#cb39-955" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_point(aes(y = min_emission_kg), colour = "#CB5416") +</span></span>
+<span id="cb39-956"><a href="#cb39-956" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_point(aes(y = max_emission_kg), colour = "#267266") +</span></span>
+<span id="cb39-957"><a href="#cb39-957" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> Sum_CH), <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb39-958"><a href="#cb39-958" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb39-959"><a href="#cb39-959" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Emission"</span>) <span class="sc">+</span></span>
+<span id="cb39-960"><a href="#cb39-960" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
+<span id="cb39-961"><a href="#cb39-961" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.y =</span> <span class="fu">element_blank</span>())</span>
+<span id="cb39-962"><a href="#cb39-962" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb39-963"><a href="#cb39-963" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-964"><a href="#cb39-964" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-965"><a href="#cb39-965" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outlook</span></span>
-<span id="cb39-966"><a href="#cb39-966" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-967"><a href="#cb39-967" aria-hidden="true" tabindex="-1"></a>One thing that we did not include was the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.</span>
-<span id="cb39-968"><a href="#cb39-968" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-969"><a href="#cb39-969" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot acceleration and deceleration}</span></span>
-<span id="cb39-970"><a href="#cb39-970" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-lastFigure</span></span>
-<span id="cb39-971"><a href="#cb39-971" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Posmo trajectories with acceleration and deceleration locations.</span></span>
-<span id="cb39-972"><a href="#cb39-972" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb39-973"><a href="#cb39-973" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> posmo, <span class="fu">aes</span>(<span class="at">color =</span> acceleration))<span class="sc">+</span></span>
-<span id="cb39-974"><a href="#cb39-974" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Locations with acceleration"</span>,</span>
-<span id="cb39-975"><a href="#cb39-975" aria-hidden="true" tabindex="-1"></a>     <span class="at">subtitle =</span> <span class="st">"Movement trajectories in Switzerland"</span>,</span>
-<span id="cb39-976"><a href="#cb39-976" aria-hidden="true" tabindex="-1"></a>     <span class="at">x =</span> <span class="st">"E"</span>,</span>
-<span id="cb39-977"><a href="#cb39-977" aria-hidden="true" tabindex="-1"></a>     <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
-<span id="cb39-978"><a href="#cb39-978" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">"Acceleration"</span>))<span class="sc">+</span></span>
-<span id="cb39-979"><a href="#cb39-979" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
-<span id="cb39-980"><a href="#cb39-980" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb39-981"><a href="#cb39-981" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb39-982"><a href="#cb39-982" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-983"><a href="#cb39-983" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sources</span></span>
-<span id="cb39-984"><a href="#cb39-984" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-985"><a href="#cb39-985" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data</span></span>
-<span id="cb39-986"><a href="#cb39-986" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-987"><a href="#cb39-987" aria-hidden="true" tabindex="-1"></a>Bundesamt für Landestopographie swisstopo (no date a): DHM25. URL: <span class="ot">&lt;https://www.swisstopo.admin.ch/de/geodata/height/dhm25.html#download&gt;</span> (as at: no date) (last access: 05.06.2023).</span>
-<span id="cb39-988"><a href="#cb39-988" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-989"><a href="#cb39-989" aria-hidden="true" tabindex="-1"></a>Bundesamt für Landestopographie swisstopo (no date b): swissBOUNDARIES3D URL: &lt;https://www.swisstopo.admin.ch/de/geodata/landscape/boundaries3d.html &gt; (as at: no date) (last access: 05.06.2023).</span>
-<span id="cb39-990"><a href="#cb39-990" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-991"><a href="#cb39-991" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Car emissions</span></span>
-<span id="cb39-992"><a href="#cb39-992" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-993"><a href="#cb39-993" aria-hidden="true" tabindex="-1"></a>Bundesamt für Statistik BFS (2023): Fahrzeuge und Transportmittelbestände des Güterverkehrs. URL: <span class="ot">&lt;https://www.bfs.admin.ch/bfs/de/home/statistiken/raum-umwelt/umweltindikatoren/alle-indikatoren/reaktionen-der-gesellschaft/co2-ausstoss-personenwagen.assetdetail.23908017.html&gt;</span> (as at: 05.04.2023) (last access: 05.06.2023).</span>
-<span id="cb39-994"><a href="#cb39-994" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-995"><a href="#cb39-995" aria-hidden="true" tabindex="-1"></a>Deutsche Physikalische Gesellschaft (2022): CO2-Emissionen beim Reisen. URL: <span class="ot">&lt;https://www.dpg-physik.de/vereinigungen/fachuebergreifend/ak/akjdpg/wir/arbeitsteams/nachhaltigkeit/nachgeforscht/co2-emissionen-beim-reisen&gt;</span> (as at: 01.01.2022) (last access: 05.06.2023).</span>
-<span id="cb39-996"><a href="#cb39-996" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-997"><a href="#cb39-997" aria-hidden="true" tabindex="-1"></a>Europäisches Parlament (2018): Senkung der Emissionen: Neue CO₂-Ziele für Pkw und leichte Nutzfahrzeug. URL: <span class="ot">&lt;https://www.europarl.europa.eu/news/de/headlines/society/20180920STO14027/senkung-der-emissionen-neue-co2-ziele-fur-pkw-und-leichte-nutzfahrzeuge&gt;</span> (as at: 15.02.2023) (last access: 05.06.2023).</span>
-<span id="cb39-998"><a href="#cb39-998" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-999"><a href="#cb39-999" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (2014): E-Rad macht mobil. Potenziale von Pedelecs und deren Umweltwirkung. URL: <span class="ot">&lt;https://www.umweltbundesamt.de/sites/default/files/medien/378/publikationen/hgp_e-rad_macht_mobil_-_pelelecs_4.pdf&gt;</span> (as at: 01.08.2014) (last access: 05.06.2023).</span>
-<span id="cb39-1000"><a href="#cb39-1000" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1001"><a href="#cb39-1001" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (2021): Vergleich der durchschnittlichen Emissionen einzelner Verkehrsmittel Personenverkehr in Deutschland 2021. URL: <span class="ot">&lt;https://www.umweltbundesamt.de/sites/default/files/medien/366/bilder/dateien/uba_emissionstabelle_personenverkehr_2021_0.pdf&gt;</span> (as at: 01.12.2022) (last access: 05.06.2023).</span>
-<span id="cb39-1002"><a href="#cb39-1002" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1003"><a href="#cb39-1003" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (no date): Niedrigere Geschwindigkeit spart Energie und schont die Umwelt. URL: <span class="ot">&lt;https://www.umweltbundesamt.at/umweltthemen/mobilitaet/mobilitaetsdaten/tempo&gt;</span> (as at: no date) (last access: 21.06.2023).</span>
-<span id="cb39-1004"><a href="#cb39-1004" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1005"><a href="#cb39-1005" aria-hidden="true" tabindex="-1"></a>umweltnetz-schweiz (2019): Klimabaustein: Bus oder Bahn? URL: <span class="ot">&lt;https://www.umweltnetz-schweiz.ch/themen/klima/3101-klimabaustein-bus-oder-bahn.html#:~:text=Autobusse%20dagegen%20verursachen%20rund%20145,rund%2037%20g%2FPkm%20ausstossen&gt;</span> (as at: 18.01.2019) (last access: 05.06.2023).</span>
-<span id="cb39-1006"><a href="#cb39-1006" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1007"><a href="#cb39-1007" aria-hidden="true" tabindex="-1"></a>World Wide Fund for Nature (2020): Autoverkehr und Elektromobilität. URL: <span class="ot">&lt;https://www.wwf.ch/de/unsere-ziele/autoverkehr-und-elektromobilitaet&gt;</span> (as at: no date) (last access: 05.06.2023).</span>
-<span id="cb39-1008"><a href="#cb39-1008" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1009"><a href="#cb39-1009" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Slope threshold</span></span>
-<span id="cb39-1010"><a href="#cb39-1010" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1011"><a href="#cb39-1011" aria-hidden="true" tabindex="-1"></a>Wikipedia (2022): Balmberg. URL: <span class="ot">&lt;https://de.wikipedia.org/wiki/Balmberg&gt;</span> (as at: 02.10.2022) (last access: 28.06.2023).</span>
-<span id="cb39-1012"><a href="#cb39-1012" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1013"><a href="#cb39-1013" aria-hidden="true" tabindex="-1"></a><span class="fu">### Literature</span></span>
-<span id="cb39-1014"><a href="#cb39-1014" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1015"><a href="#cb39-1015" aria-hidden="true" tabindex="-1"></a>Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE (2023): Mikrozensus Mobilität und Verkehr (MZMV).</span>
-<span id="cb39-1016"><a href="#cb39-1016" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1017"><a href="#cb39-1017" aria-hidden="true" tabindex="-1"></a>**Dong, Yaping; Xu, Jinliang; Ni, Jie** (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp. 18064-18077.</span>
-<span id="cb39-1018"><a href="#cb39-1018" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1019"><a href="#cb39-1019" aria-hidden="true" tabindex="-1"></a>**Metcalfe, J.; Boulter &amp; P.** (2022). Effect of speed on greenhouse gas emissions from road transport: a </span>
-<span id="cb39-1020"><a href="#cb39-1020" aria-hidden="true" tabindex="-1"></a>review. Report prepared by Emission Impossible Ltd, and EMM Consulting, for Waka Kotahi, </span>
-<span id="cb39-1021"><a href="#cb39-1021" aria-hidden="true" tabindex="-1"></a>December, 2022.</span>
-<span id="cb39-1022"><a href="#cb39-1022" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1023"><a href="#cb39-1023" aria-hidden="true" tabindex="-1"></a>**Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios** (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.</span>
-<span id="cb39-1024"><a href="#cb39-1024" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-1025"><a href="#cb39-1025" aria-hidden="true" tabindex="-1"></a>**Xu, Jinliang; Dong, Yaping &amp; Yan, Menghua** (2020): A Model for Estimating Passenger-Car Carbon Emissions that Accounts for Uphill, Downhill and Flat Roads. In: Sustainability, Vol. 12, No. 2028.</span>
+<span id="cb39-964"><a href="#cb39-964" aria-hidden="true" tabindex="-1"></a><span class="fu"># Discussion</span></span>
+<span id="cb39-965"><a href="#cb39-965" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-966"><a href="#cb39-966" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations</span></span>
+<span id="cb39-967"><a href="#cb39-967" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-968"><a href="#cb39-968" aria-hidden="true" tabindex="-1"></a>Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. </span>
+<span id="cb39-969"><a href="#cb39-969" aria-hidden="true" tabindex="-1"></a>Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. Due to theses inaccuracies we excluded all the outliers which led to a reduced amount of data and assumptions we had to make. Another limitations concerning our data was that we only had data sets of three different users which may have not represented the grand public well.</span>
+<span id="cb39-970"><a href="#cb39-970" aria-hidden="true" tabindex="-1"></a>Further, we used very simplified approaches to calculate the emissions. We considered various sources for the emission constants in the first and most simple approach, however there are for sure many more sources stating different values. For the speed approach we also used a very simplified method with using one source and extrapolation its observed values. Here, we do not consider anything about car size, fuel type, and so on. Pretty much the same goes for the slope scenario. While the height values extracted from the DHM were quite accurate, the rest of this approach very likely was not. We used values from only one source (Xu et al., 2020) to extrapolated the increase in emission based on the inclination. The sources used two  vehicle types with different sizes whereas we averaged for both types. As we only used positive slopes which cause an increase in emission, our calculated increase values were possible to high. Overall, there are many assumptions that we made an also many times that we had to average over certain car types, environmental factors, and so on. </span>
+<span id="cb39-971"><a href="#cb39-971" aria-hidden="true" tabindex="-1"></a>Furthermore, we also did not include the occupancy rate of any public transportation vehicle or the cars as we simple did not have easily accessible data about that. The same goes for the influence of the fuel type. We do not know what kind of cars our three users drive which is why we could not consider fuel type of cars in our analysis either.</span>
+<span id="cb39-972"><a href="#cb39-972" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-973"><a href="#cb39-973" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-974"><a href="#cb39-974" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outlook</span></span>
+<span id="cb39-975"><a href="#cb39-975" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-976"><a href="#cb39-976" aria-hidden="true" tabindex="-1"></a>There are many factors that could have been included in our analysis as stated above. One thing that we did not include and would suggest to do as a next step is including the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.</span>
+<span id="cb39-977"><a href="#cb39-977" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-978"><a href="#cb39-978" aria-hidden="true" tabindex="-1"></a><span class="in">```{r plot acceleration and deceleration}</span></span>
+<span id="cb39-979"><a href="#cb39-979" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-lastFigure</span></span>
+<span id="cb39-980"><a href="#cb39-980" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: Posmo trajectories with acceleration and deceleration locations.</span></span>
+<span id="cb39-981"><a href="#cb39-981" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb39-982"><a href="#cb39-982" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> posmo, <span class="fu">aes</span>(<span class="at">color =</span> acceleration))<span class="sc">+</span></span>
+<span id="cb39-983"><a href="#cb39-983" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Locations with acceleration"</span>,</span>
+<span id="cb39-984"><a href="#cb39-984" aria-hidden="true" tabindex="-1"></a>     <span class="at">subtitle =</span> <span class="st">"Movement trajectories in Switzerland"</span>,</span>
+<span id="cb39-985"><a href="#cb39-985" aria-hidden="true" tabindex="-1"></a>     <span class="at">x =</span> <span class="st">"E"</span>,</span>
+<span id="cb39-986"><a href="#cb39-986" aria-hidden="true" tabindex="-1"></a>     <span class="at">y =</span> <span class="st">"N"</span>)<span class="sc">+</span></span>
+<span id="cb39-987"><a href="#cb39-987" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="st">"Acceleration"</span>))<span class="sc">+</span></span>
+<span id="cb39-988"><a href="#cb39-988" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>))<span class="sc">+</span></span>
+<span id="cb39-989"><a href="#cb39-989" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb39-990"><a href="#cb39-990" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb39-991"><a href="#cb39-991" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-992"><a href="#cb39-992" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sources</span></span>
+<span id="cb39-993"><a href="#cb39-993" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-994"><a href="#cb39-994" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data</span></span>
+<span id="cb39-995"><a href="#cb39-995" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-996"><a href="#cb39-996" aria-hidden="true" tabindex="-1"></a>Bundesamt für Landestopographie swisstopo (no date a): DHM25. URL: <span class="ot">&lt;https://www.swisstopo.admin.ch/de/geodata/height/dhm25.html#download&gt;</span> (as at: no date) (last access: 05.06.2023).</span>
+<span id="cb39-997"><a href="#cb39-997" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-998"><a href="#cb39-998" aria-hidden="true" tabindex="-1"></a>Bundesamt für Landestopographie swisstopo (no date b): swissBOUNDARIES3D URL: &lt;https://www.swisstopo.admin.ch/de/geodata/landscape/boundaries3d.html &gt; (as at: no date) (last access: 05.06.2023).</span>
+<span id="cb39-999"><a href="#cb39-999" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1000"><a href="#cb39-1000" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Car emissions</span></span>
+<span id="cb39-1001"><a href="#cb39-1001" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1002"><a href="#cb39-1002" aria-hidden="true" tabindex="-1"></a>Bundesamt für Statistik BFS (2023): Fahrzeuge und Transportmittelbestände des Güterverkehrs. URL: <span class="ot">&lt;https://www.bfs.admin.ch/bfs/de/home/statistiken/raum-umwelt/umweltindikatoren/alle-indikatoren/reaktionen-der-gesellschaft/co2-ausstoss-personenwagen.assetdetail.23908017.html&gt;</span> (as at: 05.04.2023) (last access: 05.06.2023).</span>
+<span id="cb39-1003"><a href="#cb39-1003" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1004"><a href="#cb39-1004" aria-hidden="true" tabindex="-1"></a>Deutsche Physikalische Gesellschaft (2022): CO2-Emissionen beim Reisen. URL: <span class="ot">&lt;https://www.dpg-physik.de/vereinigungen/fachuebergreifend/ak/akjdpg/wir/arbeitsteams/nachhaltigkeit/nachgeforscht/co2-emissionen-beim-reisen&gt;</span> (as at: 01.01.2022) (last access: 05.06.2023).</span>
+<span id="cb39-1005"><a href="#cb39-1005" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1006"><a href="#cb39-1006" aria-hidden="true" tabindex="-1"></a>Europäisches Parlament (2018): Senkung der Emissionen: Neue CO₂-Ziele für Pkw und leichte Nutzfahrzeug. URL: <span class="ot">&lt;https://www.europarl.europa.eu/news/de/headlines/society/20180920STO14027/senkung-der-emissionen-neue-co2-ziele-fur-pkw-und-leichte-nutzfahrzeuge&gt;</span> (as at: 15.02.2023) (last access: 05.06.2023).</span>
+<span id="cb39-1007"><a href="#cb39-1007" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1008"><a href="#cb39-1008" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (2014): E-Rad macht mobil. Potenziale von Pedelecs und deren Umweltwirkung. URL: <span class="ot">&lt;https://www.umweltbundesamt.de/sites/default/files/medien/378/publikationen/hgp_e-rad_macht_mobil_-_pelelecs_4.pdf&gt;</span> (as at: 01.08.2014) (last access: 05.06.2023).</span>
+<span id="cb39-1009"><a href="#cb39-1009" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1010"><a href="#cb39-1010" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (2021): Vergleich der durchschnittlichen Emissionen einzelner Verkehrsmittel Personenverkehr in Deutschland 2021. URL: <span class="ot">&lt;https://www.umweltbundesamt.de/sites/default/files/medien/366/bilder/dateien/uba_emissionstabelle_personenverkehr_2021_0.pdf&gt;</span> (as at: 01.12.2022) (last access: 05.06.2023).</span>
+<span id="cb39-1011"><a href="#cb39-1011" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1012"><a href="#cb39-1012" aria-hidden="true" tabindex="-1"></a>Umweltbundesamt (no date): Niedrigere Geschwindigkeit spart Energie und schont die Umwelt. URL: <span class="ot">&lt;https://www.umweltbundesamt.at/umweltthemen/mobilitaet/mobilitaetsdaten/tempo&gt;</span> (as at: no date) (last access: 21.06.2023).</span>
+<span id="cb39-1013"><a href="#cb39-1013" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1014"><a href="#cb39-1014" aria-hidden="true" tabindex="-1"></a>umweltnetz-schweiz (2019): Klimabaustein: Bus oder Bahn? URL: <span class="ot">&lt;https://www.umweltnetz-schweiz.ch/themen/klima/3101-klimabaustein-bus-oder-bahn.html#:~:text=Autobusse%20dagegen%20verursachen%20rund%20145,rund%2037%20g%2FPkm%20ausstossen&gt;</span> (as at: 18.01.2019) (last access: 05.06.2023).</span>
+<span id="cb39-1015"><a href="#cb39-1015" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1016"><a href="#cb39-1016" aria-hidden="true" tabindex="-1"></a>World Wide Fund for Nature (2020): Autoverkehr und Elektromobilität. URL: <span class="ot">&lt;https://www.wwf.ch/de/unsere-ziele/autoverkehr-und-elektromobilitaet&gt;</span> (as at: no date) (last access: 05.06.2023).</span>
+<span id="cb39-1017"><a href="#cb39-1017" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1018"><a href="#cb39-1018" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Slope threshold</span></span>
+<span id="cb39-1019"><a href="#cb39-1019" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1020"><a href="#cb39-1020" aria-hidden="true" tabindex="-1"></a>Wikipedia (2022): Balmberg. URL: <span class="ot">&lt;https://de.wikipedia.org/wiki/Balmberg&gt;</span> (as at: 02.10.2022) (last access: 28.06.2023).</span>
+<span id="cb39-1021"><a href="#cb39-1021" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1022"><a href="#cb39-1022" aria-hidden="true" tabindex="-1"></a><span class="fu">### Literature</span></span>
+<span id="cb39-1023"><a href="#cb39-1023" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1024"><a href="#cb39-1024" aria-hidden="true" tabindex="-1"></a>**Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE** (2023): Mikrozensus Mobilität und Verkehr (MZMV).</span>
+<span id="cb39-1025"><a href="#cb39-1025" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1026"><a href="#cb39-1026" aria-hidden="true" tabindex="-1"></a>**Dong, Yaping; Xu, Jinliang; Ni, Jie** (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp. 18064-18077.</span>
+<span id="cb39-1027"><a href="#cb39-1027" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1028"><a href="#cb39-1028" aria-hidden="true" tabindex="-1"></a>**Knupfer, G. (Handelszeitung)** (2014): Die SBB fahren im Vergleich im Schneckentempo. URL: <span class="ot">&lt;https://www.handelszeitung.ch/unternehmen/die-sbb-fahren-im-vergleich-im-schneckentempo-660389&gt;</span> (as at: 29.08.2014) (last access: 28.06.2023).</span>
+<span id="cb39-1029"><a href="#cb39-1029" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1030"><a href="#cb39-1030" aria-hidden="true" tabindex="-1"></a>**Metcalfe, J.; Boulter &amp; P.** (2022). Effect of speed on greenhouse gas emissions from road transport: a </span>
+<span id="cb39-1031"><a href="#cb39-1031" aria-hidden="true" tabindex="-1"></a>review. Report prepared by Emission Impossible Ltd, and EMM Consulting, for Waka Kotahi, </span>
+<span id="cb39-1032"><a href="#cb39-1032" aria-hidden="true" tabindex="-1"></a>December, 2022.</span>
+<span id="cb39-1033"><a href="#cb39-1033" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1034"><a href="#cb39-1034" aria-hidden="true" tabindex="-1"></a>**Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios** (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.</span>
+<span id="cb39-1035"><a href="#cb39-1035" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-1036"><a href="#cb39-1036" aria-hidden="true" tabindex="-1"></a>**Xu, Jinliang; Dong, Yaping &amp; Yan, Menghua** (2020): A Model for Estimating Passenger-Car Carbon Emissions that Accounts for Uphill, Downhill and Flat Roads. In: Sustainability, Vol. 12, No. 2028.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
