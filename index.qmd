@@ -609,8 +609,6 @@ emissions_car_slope <- posmo_car_emissions |>
 ## Simple scenario
 
 *evtl stacked barchart*
-*handelt es sich hierbei schon um durchschnittliche wöchentliche emissionen? --> habe titel angepasst*
-*Die Titel der Diagramme sind für nachher, wenn sie nebeneinander dargestellt werden, eigentlich zu lang...*
 
 ```{r plot weekly emissions for simple approach, output = TRUE}
 emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
