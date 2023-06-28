@@ -178,9 +178,7 @@ posmo |>
        title = "Static and non-static points in the trajectories",
        color = "Static")+
   theme_minimal()
-```
 
-```{r remove static points}
 # remove static points
 posmo <- posmo |>
     filter(!static)
@@ -364,7 +362,7 @@ emission_pred_gkm <- predict(fit_emission, newdata = data.frame(speed = speed_ne
 est_emission_car_speed <- data.frame(speed_new, emission_pred_gkm)
 ```
 
-```{r plot known and interpolated emission values depending on speed}
+```{r plot known and interpolated emission values depending on speed, output = TRUE}
 #| label: fig-fifthFigure
 #| fig-cap: Estimated car emission values based on speed. Values in red from Umweltbundesamt (n.d.).
 # plot the predicted as well as the old values
@@ -432,7 +430,7 @@ emissions_car_speed <- aggregate(co2_emissions_g_per_w ~ user_id, posmo_car_emis
 
 *Darstellung eher mit kontinuierlicher Skala anstatt mit einzelnen punkten (falls möglich)* Wie ist das gemeint? Höhenwerte für die ganze Schweiz darstellen? Weil wir haben ja nur dort Posmodaten mit Höhe, wo es jetzt Punkte hat.
 
-```{r plot height values for all posmo data}
+```{r plot height values for all posmo data, output = TRUE}
 #| label: fig-sixthFigure
 #| fig-cap: Elevation above sea level for posmo trajectories.
 ggplot() + 
@@ -608,7 +606,7 @@ emissions_car_slope <- posmo_car_emissions |>
 *handelt es sich hierbei schon um durchschnittliche wöchentliche emissionen? --> habe titel angepasst*
 *Die Titel der Diagramme sind für nachher, wenn sie nebeneinander dargestellt werden, eigentlich zu lang...*
 
-```{r plot weekly emissions for simple approach}
+```{r plot weekly emissions for simple approach, output = TRUE}
 emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "User", 
@@ -624,7 +622,7 @@ emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_p
 emissions_bar_simple
 ```
 
-```{r plot weekly emissions for simple approach on map}
+```{r plot weekly emissions for simple approach on map, output = TRUE}
 emissions_plot_simple <- ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 0)) +
   geom_sf(data = posmo_traveldistance, aes(color = co2_emissions_g_per_w))+
@@ -643,7 +641,7 @@ emissions_plot_simple
 
 *nicht bereits vorhin nach car gefilteret?? braucht es das nochmals?* Das ist ein anderes File. Hier sind die Emissionen berechnet und vorher waren es die ursprünglichen Posmodaten. Also ja ;)
 
-```{r plot overall emission of car for simple approach}
+```{r plot overall emission of car for simple approach, output = TRUE}
 # filter the simple emission values to only "Car" values
 emissions_car_simple <- emissions |> 
   filter(transport_mode == "Car")
@@ -669,7 +667,7 @@ plot_car_em_simple
 
 ## Speed scenario
 
-```{r plot overall emission of car for speed approach}
+```{r plot overall emission of car for speed approach, output = TRUE}
 # create the bar chart
 emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -690,7 +688,7 @@ emissions_bar_speed
 
 ## Comparision speed and simple scenario
 
-```{r plot overall emission of car for comparison of both approaches}
+```{r plot overall emission of car for comparison of both approaches, output = TRUE}
 plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", 
@@ -723,7 +721,7 @@ emissions_new <- emissions |>
   rbind(emissions_car_speed)
 ```
 
-```{r plot average weekly emission}
+```{r plot average weekly emission, output = TRUE}
 # create the bar chart
 emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emissions_g_per_w, 
                                                       fill = transport_mode)) +
@@ -745,7 +743,7 @@ grid.arrange(emissions_bar_simple + labs(subtitle = "Car emissions calcualted ba
 
 ### Slope scenario
 
-```{r plot locations with emission increase due to slope}
+```{r plot locations with emission increase due to slope, output = TRUE}
 #| label: fig-thirteenthFigure
 #| fig-cap: Spatial reference of increase in car CO~2~ emission due to slope. For better visibility, increase values are limited to values between 0.5 and 10%.
 posmo_car |> 
@@ -765,7 +763,7 @@ posmo_car |>
 
 ## Comparison slope with simple and speed scenario
 
-```{r plot overall emission of car for comparison of all three approaches}
+```{r plot overall emission of car for comparison of all three approaches, output = TRUE}
 # plot the car emissions with slope considered
 plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissions_g_per_w_slope, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -816,19 +814,15 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope,
   theme(axis.text.x = element_blank())
 ```
 
-```{r plot bar chart for emission of all transport modes using distance approach for car}
+```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}
 #| label: fig-fifteenthFigure
 #| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.
 emissions_bar_simple + labs(subtitle = "Car emissions calculated based on distance")
-```
 
-```{r plot bar chart for emission of all transport modes using speed approach for car}
 #| label: fig-sixteenthFigure
 #| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.
 emissions_plot_speed_car
-```
 
-```{r plot bar chart for emissions of all transport modes using slope approach for car}
 #| label: fig-seventeenthFigure
 #| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.
 emissions_plot_slope_car
@@ -919,7 +913,7 @@ posmo_emission_mode <- overallEmissionPosmo(posmo_emission, "Car [kg]") |>
 ```
 
 
-```{r plot comparison between our calculated emission and the Posmo emission}
+```{r plot comparison between our calculated emission and the Posmo emission, output = TRUE}
 #| label: fig-eighteenthFigure
 #| fig-cap: PLEASE INSERT YOUR FIGURE CAPTION.
 emission_cal_posmo |>
