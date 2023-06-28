@@ -57,7 +57,7 @@ The Posmo data has different temporal time spans for the different people. Data 
 Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.
 We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account.
 Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS & ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). 
-We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (source??). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  
+We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  
 Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).
 
 
@@ -254,7 +254,7 @@ constants_emission <- constants_emission |>
   )
 ```
 
-*brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?* Habe es versucht, hat auf die schnelle nicht geklappt. 
+*brauchen wir get_days function oder eigentlich nur get_weeks?? könnte man Funktion umschreiben?* Wir bräuchten nur get_weeks. Habe es versucht, hat auf die schnelle nicht geklappt. 
 
 ```{r define function to get the number of days per user and calculate it}
 # define a function to get the number of weekdays recorded per user id
@@ -618,10 +618,10 @@ emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_p
   labs(x = "User", 
        y = expression("CO"["2"]~ "Emissions [g/week]"),
        fill = "Transport mode") +
-  ggtitle("Average Weeky Emissions per Transportation Mode and User") +
+  ggtitle("Average Weeky Emissions per Transportation Mode & User") +
   theme_minimal()+
-  theme(plot.title = element_text(size = 10),
-        plot.subtitle = element_text(size = 8)) +
+  theme(plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 6)) +
   ylim(0, 27000)+
   theme(axis.text.x = element_blank())
 
@@ -669,7 +669,8 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
   theme_minimal()+
   theme(axis.text.x = element_blank(),
         legend.position = "none",
-        plot.title = element_text(size = 14))
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-ninthFigure
 #| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.
@@ -743,11 +744,11 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
        y = expression("CO"["2"]~ "Emissions [g/week]"), 
        fill = "Transport Mode",
        subtitle = "Car emissions calculated based on speed") +
-  ggtitle("Average Weeky Emissions per Transportation Mode and User")+
+  ggtitle("Average Weeky Emissions per Transportation Mode & User")+
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        plot.title = element_text(size = 10),
+        plot.title = element_text(size = 8),
         plot.subtitle = element_text(size = 8))
 
 #| label: fig-twelthFigure
@@ -793,7 +794,8 @@ plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissi
   theme_minimal()+
   theme(axis.text.x = element_blank(),
         legend.text = element_blank(),
-        plot.title = element_text(size = 14))
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-fourteenthFigure
 #| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.
@@ -1007,9 +1009,11 @@ Wikipedia (2022): Balmberg. URL: <https://de.wikipedia.org/wiki/Balmberg> (as at
 
 ### Literature
 
-Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE (2023): Mikrozensus Mobilität und Verkehr (MZMV).
+**Bundesamt für Statistik BFS, Bundesamt für Raumplanung ARE** (2023): Mikrozensus Mobilität und Verkehr (MZMV).
 
 **Dong, Yaping; Xu, Jinliang; Ni, Jie** (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp. 18064-18077.
+
+**Knupfer, G. (Handelszeitung)** (2014): Die SBB fahren im Vergleich im Schneckentempo. URL: <https://www.handelszeitung.ch/unternehmen/die-sbb-fahren-im-vergleich-im-schneckentempo-660389> (as at: 29.08.2014) (last access: 28.06.2023).
 
 **Metcalfe, J.; Boulter & P.** (2022). Effect of speed on greenhouse gas emissions from road transport: a 
 review. Report prepared by Emission Impossible Ltd, and EMM Consulting, for Waka Kotahi, 
