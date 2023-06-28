@@ -2,7 +2,7 @@
 title: Calculation of carbon dioxide emissions from movement trajectories
 subtitle: GEO880 - Computational Movment Analysis (UZH) / Patterns and Trends in Environmental Data (ZHAW)
 author: Laura Haus and Antonia Hehli
-date: 02.07.2023
+date: 07.02.2023
 output: html
 format: 
   html: 
@@ -50,7 +50,7 @@ loadPosmoData <- function(filepath){
   }
 ```
 
-```{r load validated data}
+```{r load validated data, message = FALSE}
 # load all validated Posmo track files
 posmo1 <- loadPosmoData("data/posmo_tracks/posmo_1.csv") # our own data
 posmo2 <- loadPosmoData("data/posmo_tracks/posmo_2.csv") # our own data
@@ -75,7 +75,7 @@ posmo <- cbind(posmo, posmo_coord)
 
 #### Filter segment locations
 
-```{r filter Posmo tracks to CH}
+```{r filter Posmo tracks to CH, message = FALSE}
 # read Switzerland and the cantons
 CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056)
 CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
@@ -97,7 +97,7 @@ ggplot() +
 
 #### Filter transport modes
 
-```{r filter transportation modes}
+```{r filter transportation modes, message = FALSE}
 # get all the transportation modes
 unique(posmo$transport_mode)
 
@@ -279,7 +279,7 @@ posmo_days_per_user$days <- number_of_days
 posmo_days_per_user$weeks <- round(number_of_weeks, 3)
 ```
 
-```{r calculate emissions}
+```{r calculate emissions, message = FALSE}
 # calculate the distances [m], the timelag [s], the speed [m/s], and the speed [km/h]: use group_by to make sure it only calculates for one user id and not between different user ids
 posmo <- posmo |>
   group_by(user_id)|>
@@ -425,7 +425,7 @@ posmo_car_slow <- posmo_car |>
 posmo_car <- rbind(posmo_car_fast, posmo_car_slow)
 ```
 
-```{r}
+```{r, message = FALSE}
 # group by user_id to sum up the distance in km
 posmo_car_traveldistance <- 
   posmo_car |> 
@@ -439,7 +439,8 @@ posmo_car_emissions <- posmo_car_traveldistance |>
   summarise(sum_emissions_g = sum(emissions_g, na.rm = TRUE))
 
 # join with the number of days & weeks per user
-posmo_car_emissions <- posmo_car_emissions |> left_join(posmo_days_per_user)
+posmo_car_emissions <- posmo_car_emissions |> 
+  left_join(posmo_days_per_user)
 
 # calculate emissions per week
 posmo_car_emissions <- posmo_car_emissions |>
@@ -490,13 +491,13 @@ range(posmo_car$slope_percent)
 ```{r}
 # filter absolute slope values greater than 100%
 posmo_car <- posmo_car |> 
-  filter(abs(slope_percent) <= 100)
+  filter(abs(slope_percent) <= 25)
 
 # check if it worked
 range(posmo_car$slope_percent)
 ```
 
-```{r load and mutate slope emissions}
+```{r load and mutate slope emissions, message = FALSE}
 emissions_slope <- read_delim("data/Emission_Slope.csv", delim = ";") |>
   # calculate the absolute increase in carbon emission
   mutate(increase_gkm = Emission_slope_gkm - Emission_flat_gkm,
@@ -682,7 +683,7 @@ emissions_car_simple <- emissions |>
 plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "Total Emissions [g/week]", fill = "User",
-       subtitle = "Car emissions calculated using distance * carbon emission constant per distance") +
+       subtitle = "Car emissions calculated using distance") +
   ggtitle("Total Car Emissions by User ID per Week") +
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 4, vjust = -0.5)+
   ylim(0, 27000)+
@@ -693,7 +694,7 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
 plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "Total Emissions [g/week]", fill = "User",
-       subtitle = "Car emissions calculated using distance per speed * speed constants") +
+       subtitle = "Car emissions calculated using speed") +
   ggtitle("Total Car Emissions by User ID per Week") +
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 4, vjust = -0.5)+
   ylim(0, 27000)+
@@ -727,7 +728,6 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "Total Emissions [g/week]", fill = "Transport Mode",
        subtitle = "Car emissions calculated based on speed") +
-  ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank())
@@ -771,7 +771,7 @@ plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissi
         legend.text = element_blank())
 
 # plot all three histograms next to each other
-grid.arrange(plot_car_em_simple, plot_car_em, plot_car_em_slope, ncol = 3)
+grid.arrange(plot_car_em_simple, plot_car_em, plot_car_em_slope, ncol = 1)
 ```
 
 ```{r}
@@ -804,7 +804,7 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope, aes(x = user_id, y = co2
 # plot them next to each other, the 
 grid.arrange(emissions_bar_simple + labs(subtitle = "Car emissions calculated based on distance"),
              emissions_plot_speed_car, 
-             emissions_plot_slope_car, ncol = 3)
+             emissions_plot_slope_car, ncol = 1)
 ```
 
 ### Comparison Posmo emission calculations and our calculations
@@ -844,7 +844,7 @@ daily_emissions <- function(posmo_data, constants){
 daily_emission <- daily_emissions(posmo, constants_emission)
 ```
 
-```{r read in emission values from Posmo}
+```{r read in emission values from Posmo, message = FALSE}
 
 posmo_emission_1 <- read_delim("data/Emission_Posmo_1.csv", delim = ";") |>
   mutate(
@@ -933,11 +933,15 @@ umweltnetz-schweiz (2019): Klimabaustein: Bus oder Bahn? URL: <https://www.umwel
 
 World Wide Fund for Nature (2020): Autoverkehr und Elektromobilität. URL: <https://www.wwf.ch/de/unsere-ziele/autoverkehr-und-elektromobilitaet> (as at: no date) (last access: 05.06.2023).
 
+#### Slope threshold
+
+Wikipedia (2022): Balmberg. URL: <https://de.wikipedia.org/wiki/Balmberg> (as at: 02.10.2022) (last access: 28.06.2023).
+
 ### Literature
 
-*Dong, Yaping; Xu, Jinliang; Ni, Jie* (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp. 18064-18077.
+**Dong, Yaping; Xu, Jinliang; Ni, Jie** (2022): Carbon emission model of vehicles driving at fluctuating speed on highway. In: Environmental Science and Pollution Research, Vol. 30, pp. 18064-18077.
 
-*Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios* (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.
+**Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios** (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.
 
-*Xu, Jinliang; Dong, Yaping & Yan, Menghua* (2020): A Model for Estimating Passenger-Car Carbon Emissions that Accounts for Uphill, Downhill and Flat Roads. In: Sustainability, Vol. 12, No. 2028.
+**Xu, Jinliang; Dong, Yaping & Yan, Menghua** (2020): A Model for Estimating Passenger-Car Carbon Emissions that Accounts for Uphill, Downhill and Flat Roads. In: Sustainability, Vol. 12, No. 2028.
 
