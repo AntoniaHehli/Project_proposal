@@ -96,6 +96,22 @@ ggplot() +
   theme_minimal()
 ```
 
+```{r plot all posmo tracks}
+#| label: fig-firstFigure
+#| fig-cap: All posmo tracks from the three data set, colored by transport mode.
+# check if it worked
+ggplot() +
+  geom_sf(data = CH_cantons, alpha = 0) +
+  geom_sf(data = posmo, aes(color = transport_mode), size = 0.8) +
+  coord_sf(datum = st_crs(2056)) +
+  labs(x = "E",
+       y = "N",
+       title = "Posmo tracks in Switzerland") +
+  guides(color = guide_legend(title = "Transport Mode"))+
+  theme_minimal()
+```
+
+
 #### Filter transport modes
 
 ```{r filter transportation modes, message = FALSE}
@@ -110,7 +126,9 @@ posmo <- posmo |>
   filter(transport_mode %in% transport_modes)
 ```
 
-```{r plot all tracks, fig.cap = 'Posmo tracks for our analysis colored by transport mode.'}
+```{r plot all tracks}
+#| label: fig-secondFigure
+#| fig-cap: Posmo tracks for our analysis colored by transport mode.
 ggplot(posmo, aes(color = transport_mode)) + 
   geom_sf()+
   labs(x = "E",
@@ -160,7 +178,9 @@ posmo <- posmo |>
     mutate(static = stepMean < 215)
 ```
 
-```{r plot static, fig.cap = 'Static and non-static parts of the trajectories.'}
+```{r plot static}
+#| label: fig-thirdFigure
+#| fig-cap: Static and non-static parts of the Posmo trajectories.
 # plot the trajectories if they are static or not
 posmo |>
   ggplot(aes(X,Y)) +
@@ -369,7 +389,9 @@ speed <- c(100, 110, 120, 130)
 emission <- c(146, 158, 172, 190)
 ```
 
-```{r known emission values depending on speed, fig.cap='Car CO~2~ emission values depending on speed (Umweltbundesamt, n.d.).'}
+```{r known emission values depending on speed}
+#| label: fig-fourthFigure
+#| fig-cap: Car CO~2~ emission values depending on speed (Umweltbundesamt, n.d.).
 # plot them
 ggplot()+
   geom_point(aes(x = speed, y = emission))+
@@ -392,7 +414,9 @@ emission_pred_gkm <- predict(fit_emission, newdata = data.frame(speed = speed_ne
 est_emission_car_speed <- data.frame(speed_new, emission_pred_gkm)
 ```
 
-```{r, fig.cap='Estimated car emission values based on speed. Values in red from Umweltbundesamt (n.d.).'}
+```{r}
+#| label: fig-fifthFigure
+#| fig-cap: Estimated car emission values based on speed. Values in red from Umweltbundesamt (n.d.).
 # plot the predicted as well as the old values
 ggplot()+
   geom_point(aes(x = speed_new, y = emission_pred_gkm), color = "blue")+
@@ -405,7 +429,6 @@ ggplot()+
        y = "CO2 Emission [g/km]")+
   theme_minimal()
 ```
-
 
 ```{r}
 # filter to all cars
@@ -463,7 +486,9 @@ emissions_car_speed <- aggregate(co2_emissions_g_per_w ~ user_id, posmo_car_emis
 
 ### Analysis including slope
 
-```{r plot height values for all posmo data, fig.cap='Elevation above sea level for posmo trajectories.'}
+```{r plot height values for all posmo data}
+#| label: fig-sixthFigure
+#| fig-cap: Elevation above sea level for posmo trajectories.
 ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 100)) +
   geom_sf(data = posmo, aes(color = height)) +
@@ -637,7 +662,7 @@ emissions_car_slope <- posmo_car_emissions |>
 
 ### Simple scenario
 
-```{r total emissions simple, fig.cap='CO~2~ emission based on distances per user normalized over 7 days for different transport modes.'}
+```{r total emissions simple}
 emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "CO~2~ Emissions [g/week]", fill = "Transport Mode") +
@@ -646,10 +671,12 @@ emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_p
   ylim(0, 27000)+
   theme(axis.text.x = element_blank())
 
+#| label: fig-seventhFigure
+#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for different transport modes.
 emissions_bar_simple
 ```
 
-```{r plot emissions simple, fig.cap='Spatial reference for CO~2~ emission based on distances per user normalized over 7 days for all transport modes.'}
+```{r plot emissions simple}
 emissions_plot_simple <- ggplot() + 
   geom_sf(data = CH_cantons, aes(alpha = 0)) +
   geom_sf(data = posmo_traveldistance, aes(color = co2_emissions_g_per_w))+
@@ -661,10 +688,12 @@ emissions_plot_simple <- ggplot() +
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 
+#| label: fig-eigthFigure
+#| fig-cap: Spatial reference for CO~2~ emission based on distances per user normalized over 7 days for all transport modes.
 emissions_plot_simple
 ```
 
-```{r, fig.cap='CO~2~ emission based on distances per user normalized over 7 days for transport mode car.'}
+```{r}
 # filter the simple emission values to only "Car" values
 emissions_car_simple <- emissions |> 
   filter(transport_mode == "Car")
@@ -681,12 +710,14 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
   theme(axis.text.x = element_blank(),
         legend.text = element_blank())
 
+#| label: fig-ninthFigure
+#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.
 plot_car_em_simple
 ```
 
 ### Speed scenario
 
-```{r, fig.cap = 'Car CO~2~ emission based on speed per user normalized over 7 days.'}
+```{r}
 # create the bar chart
 emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -697,6 +728,8 @@ emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emis
   theme(axis.text.x = element_blank(),
         legend.position = "none")
 
+#| label: fig-tenthFigure
+#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.
 emissions_bar_speed
 ```
 
@@ -704,7 +737,7 @@ emissions_bar_speed
 
 #### Car emission values
 
-```{r, fig.cap = 'Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).}
+```{r}
 plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Users", y = "CO~2~ Emissions [g/week]", fill = "User",
@@ -716,6 +749,8 @@ plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_
   theme(axis.text.x = element_blank(),
         legend.text = element_blank())
 
+#| label: fig-eleventhFigure
+#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).
 # plot them next to each other
 grid.arrange(plot_car_em_simple, 
              plot_car_em, ncol = 2)
@@ -735,7 +770,7 @@ emissions_new <- emissions |>
   rbind(emissions_car_speed)
 ```
 
-```{r, fig.cap = 'Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).'}
+```{r}
 # create the bar chart
 emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emissions_g_per_w, 
                                                       fill = transport_mode)) +
@@ -747,13 +782,17 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
   theme_minimal()+
   theme(axis.text.x = element_blank())
 
-# plot them next to each other, the 
+#| label: fig-twelthFigure
+#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).
+# plot them next to each other
 grid.arrange(emissions_bar_simple + labs(subtitle = "Car emissions calcualted based on distance"), emissions_plot_speed_car, ncol = 2)
 ```
 
 ### Slope scenario
 
-```{r plot locations with increase due to slope, fig.cap = 'Spatial reference of increase in car CO~2~ emission due to slope. For better visibility, increase values are limited to values between 0.5 and 10%.'}
+```{r plot locations with increase due to slope}
+#| label: fig-thirteenthFigure
+#| fig-cap: Spatial reference of increase in car CO~2~ emission due to slope. For better visibility, increase values are limited to values between 0.5 and 10%.
 posmo_car |> 
   # filter increase values between 0.5 and 10%
   filter(emission_increase_perc >= 0.5 & emission_increase_perc <= 10) |>
@@ -771,7 +810,7 @@ posmo_car |>
 
 ### Comparison slope with simple and speed scenario
 
-```{r, fig.cap = 'Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.'}
+```{r}
 # plot the car emissions with slope considered
 plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissions_g_per_w_slope, fill = user_id)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -784,6 +823,8 @@ plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissi
   theme(axis.text.x = element_blank(),
         legend.text = element_blank())
 
+#| label: fig-fourteenthFigure
+#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.
 # plot all three histograms next to each other
 grid.arrange(plot_car_em_simple, plot_car_em, plot_car_em_slope, ncol = 1)
 ```
@@ -816,15 +857,21 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope, aes(x = user_id, y = co2
   theme(axis.text.x = element_blank())
 ```
 
-```{r, fig.cap = 'CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.'}
+```{r}
+#| label: fig-fifteenthFigure
+#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.
 emissions_bar_simple + labs(subtitle = "Car emissions calculated based on distance")
 ```
 
-```{r, fig.cap = 'CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.'}
+```{r}
+#| label: fig-sixteenthFigure
+#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.
 emissions_plot_speed_car
 ```
 
-```{r, fig.cap = 'CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.'}
+```{r}
+#| label: fig-seventeenthFigure
+#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.
 emissions_plot_slope_car
 ```
 
@@ -897,6 +944,8 @@ emission_cal_posmo <- left_join(emission_posmo_sum, emission_CH_sum, by = c("use
 ```
 
 ```{r, warning = FALSE}
+#| label: fig-eighteenthFigure
+#| fig-cap: PLEASE INSERT YOUR FIGURE CAPTION.
 emission_cal_posmo |>
   ggplot(aes(x = user_id)) +
   geom_linerange(aes(ymin = min_emission_kg, ymax = max_emission_kg, x = user_id),
@@ -917,6 +966,8 @@ emission_cal_posmo |>
 One thing that we did not include was the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.
 
 ```{r plot (de)acceleration for CH}
+#| label: fig-lastFigure
+#| fig-cap: Posmo trajectories with acceleration and deceleration locations.
 ggplot()+
   geom_sf(data = posmo, aes(color = acceleration))+
   labs(title = "Locations with acceleration",
