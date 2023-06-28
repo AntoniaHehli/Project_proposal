@@ -189,3 +189,21 @@ ggplot()+
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 ```
+
+```{r function to get the weekly emissions}
+# define a function to get the number of weekdays recorded per user id using the average
+weekly_emissions <- function(posmo_data, constants){
+  # make sure Date is provided as date and not as datetime
+  posmo_data$week <- isoweek(as.Date(posmo_data$datetime))
+  weekly_distance <- aggregate(distance_km ~ user_id + week + transport_mode, posmo_data, FUN = sum)
+  weekly_emission <- weekly_distance |>
+    left_join(constants, by = "transport_mode")
+  weekly_emission <- weekly_emission |>
+    mutate(
+      co2_emission = distance_km * avg
+    )
+  return(weekly_emission)
+}
+
+weekly_emission <- weekly_emissions(posmo, constants_emission)
+```
