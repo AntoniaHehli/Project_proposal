@@ -31,7 +31,7 @@ library("terra")
 Road transportation is responsible for around 20 percent of global carbon dioxide emission whereof almost half of these emissions are caused by passenger road vehicles (Suarez et al., 2022). Due to the strongly negative impact of carbon dioxide emissions on climate change, they world widely receive gradually increasing concern (Dong et al., 2022). Driving behavior like acceleration as well as terrain characteristics such as an incline have valid impacts on carbon dioxide emissions (Dong et al., 2022; Suarez et al., 2022; Xu et al., 2022).
 
 However, road traffic is not the only type of traffic that causes carbon dioxide emissions. Trains, trams, and – when also taking production emissions into account – even bicycles cause carbon dioxide emissions. Therefore, we will also consider these transportation modes.
-In this project, we analyze carbon dioxide emissions by different transportation types using different complexity levels as well as emission scenarios and compare these different setups with each other. We use validated movement data collected by the Posmo app from XY students of the course Computational Movement Analysis in Spring 2023 at ZHAW.
+In this project, we analyze carbon dioxide emissions by different transportation types using different complexity levels as well as emission scenarios and compare these different setups with each other. We use validated movement data collected by the Posmo app from 3 students of the course Computational Movement Analysis in Spring 2023 at ZHAW.
 
 ## Material and Methods
 
@@ -75,7 +75,7 @@ posmo <- cbind(posmo, posmo_coord)
 
 #### Filter segment locations
 
-```{r filter Posmo tracks to CH, message = FALSE}
+```{r filter Posmo tracks to CH, message = FALSE, echo = FALSE}
 # read Switzerland and the cantons
 CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056)
 CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
