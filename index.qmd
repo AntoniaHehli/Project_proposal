@@ -203,14 +203,18 @@ height_dhm <- extract(dhm25, posmo_lv03)
 posmo$height <- height_dhm$dhm25_grid_raster
 ```
 
-## Methods
+# Methods
 
 To calculate the emissions we first had to determine values for the carbon dioxide emissions for the considered transportation means. As they strongly vary depending on the sources we included multiple values for some of the transportation modes. 
 To calculate our weekly emission we determined the average value of the collected emission values for each transportation mode and multiplied it with the distance. 
 As the time period when people collected Posmo data does not correspond we needed to normalize the emission values for each person to determine the 7-days average. 
 In order to determine the influence of the complexity of an approach we also considered other factors such as the effect of velocity or slope on the carbon emissions. These additional factors were only calculated and compared for the emissions of cars.
-Speed
-Information about the change in emission for velocities between 100 and 130 km/h were provided by the Umweltbundesamt (2023). To estimate the emission for lower velocities we used a non-linear least squares regression. We assumed that the reduction in carbon emissions decreases at lower velocities and therefore set a threshold at 75 km/h where the carbon emissions are constant (Metcalfe & Boulter, 2022).
+
+**Speed**
+
+Information about the change in emission for velocities between 100 and 130 km/h were provided by the Umweltbundesamt (n.d.). To estimate the emission for lower velocities we used a non-linear least squares regression. We assumed that the reduction in carbon emissions decreases at lower velocities and therefore set a threshold at 75 km/h where the carbon emissions are constant (Metcalfe & Boulter, 2022).
+
+**Slope**
 
 ```{r create dataframe with constants for emissions}
 # for cars: we have various sources
