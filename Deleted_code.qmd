@@ -207,3 +207,34 @@ weekly_emissions <- function(posmo_data, constants){
 
 weekly_emission <- weekly_emissions(posmo, constants_emission)
 ```
+
+Abbildung von allen Posmo tracks mit unseren Verkehrsmitteln.
+
+```{r plot all tracks, output = TRUE}
+#| label: fig-secondFigure
+#| fig-cap: Posmo tracks for our analysis colored by transport mode.
+ggplot(posmo, aes(color = transport_mode)) + 
+  geom_sf()+
+  labs(x = "E",
+       y = "N",
+       title = "All posmo tracks for the analysis",
+       color = "Transport Mode")+
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()
+```
+
+
+Abbildung von den ersten vier Datenpunkten aus dem Paper.
+
+```{r plot known emission values depending on speed}
+#| label: fig-fourthFigure
+#| fig-cap: CO~2~ emission values for cars depending on speed (Umweltbundesamt, n.d.).
+# plot them
+ggplot()+
+  geom_point(aes(x = speed, y = emission))+
+  geom_line(aes(x = speed, y = emission))+
+  labs(title = expression("CO"["2"]~ "Emission Values for Cars Depending on Speed"),
+       x = "Speed [km/h]",
+       y = expression("CO"["2"] ~ "Emission [g/km]")) +
+  theme_minimal()
+```
