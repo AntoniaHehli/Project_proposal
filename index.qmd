@@ -620,6 +620,8 @@ emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_p
        fill = "Transport mode") +
   ggtitle("Average Weeky Emissions per Transportation Mode and User") +
   theme_minimal()+
+  theme(plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8)) +
   ylim(0, 27000)+
   theme(axis.text.x = element_blank())
 
@@ -638,7 +640,9 @@ emissions_plot_simple <- ggplot() +
   scale_color_continuous(name = expression("CO"["2"]~ "Emissions [g/week]"), type = "viridis")+
   scale_alpha_continuous(guide = "none") +
   coord_sf(datum = st_crs(2056))+
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14))
+
 
 #| label: fig-eigthFigure
 #| fig-cap: Spatial reference for CO~2~ emission based on distances per user normalized over 7 days for all transport modes.
@@ -664,7 +668,8 @@ plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emis
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none",
+        plot.title = element_text(size = 14))
 
 #| label: fig-ninthFigure
 #| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.
@@ -685,7 +690,8 @@ emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emis
   geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 3, vjust = 1)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none",
+        plot.title = element_text(size = 14))
 
 #| label: fig-tenthFigure
 #| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.
@@ -706,7 +712,8 @@ plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none",
+        plot.title = element_text(size = 14))
 
 #| label: fig-eleventhFigure
 #| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).
@@ -739,7 +746,9 @@ emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emiss
   ggtitle("Average Weeky Emissions per Transportation Mode and User")+
   ylim(0, 27000)+
   theme_minimal()+
-  theme(axis.text.x = element_blank())
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-twelthFigure
 #| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).
@@ -764,7 +773,8 @@ posmo_car |>
        y = "N")+
   scale_color_continuous(name = expression("CO"["2"]~ "emission increase [%]"), type = "viridis")+
   coord_sf(datum = st_crs(2056))+
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14))
 ```
 
 ## Comparison slope with simple and speed scenario
@@ -782,7 +792,8 @@ plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissi
   ylim(0, 27000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        legend.text = element_blank())
+        legend.text = element_blank(),
+        plot.title = element_text(size = 14))
 
 #| label: fig-fourteenthFigure
 #| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.
@@ -817,7 +828,8 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope,
   ggtitle("Total Emissions by User ID and Transportation Mode per Week") +
   ylim(0, 27000)+
   theme_minimal()+
-  theme(axis.text.x = element_blank())
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(size = 14))
 ```
 
 ```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}
@@ -939,13 +951,15 @@ emission_cal_posmo |>
 
 ## Limitations
 
-Our analysis is prone to several limitations. These range from inaccuracies in the data to limitations in our methods. 
-Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. These inaccuracies led us to exclude all the outliers which led to a reduced amount of data and assumptions we had to make.
+Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. 
+Although we worked with only validated data from the Posmo app, there were inaccuracies present. For example, sometimes speed values were exceptionally high or there was a time lag of 0 between two data points but they were at different locations. Due to theses inaccuracies we excluded all the outliers which led to a reduced amount of data and assumptions we had to make. Another limitations concerning our data was that we only had data sets of three different users which may have not represented the grand public well.
+Further, we used very simplified approaches to calculate the emissions. We considered various sources for the emission constants in the first and most simple approach, however there are for sure many more sources stating different values. For the speed approach we also used a very simplified method with using one source and extrapolation its observed values. Here, we do not consider anything about car size, fuel type, and so on. Pretty much the same goes for the slope scenario. While the height values extracted from the DHM were quite accurate, the rest of this approach very likely was not. We used values from only one source (Xu et al., 2020) to extrapolated the increase in emission based on the inclination. The sources used two  vehicle types with different sizes whereas we averaged for both types. As we only used positive slopes which cause an increase in emission, our calculated increase values were possible to high. Overall, there are many assumptions that we made an also many times that we had to average over certain car types, environmental factors, and so on. 
+Furthermore, we also did not include the occupancy rate of any public transportation vehicle or the cars as we simple did not have easily accessible data about that. The same goes for the influence of the fuel type. We do not know what kind of cars our three users drive which is why we could not consider fuel type of cars in our analysis either.
 
 
 ## Outlook
 
-One thing that we did not include was the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.
+There are many factors that could have been included in our analysis as stated above. One thing that we did not include and would suggest to do as a next step is including the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.
 
 ```{r plot acceleration and deceleration}
 #| label: fig-lastFigure
