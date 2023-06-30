@@ -26,6 +26,7 @@ library("readr")
 library("raster")
 library("sf")
 library("terra")
+library("tidyterra")
 ```
 
 # Abstract
@@ -920,11 +921,12 @@ ggplot(posmo_emission_week) +
 
 ```
 
-
 # Discussion
 
 The comparison of our three approaches shows that the car emissions decrease when increasing the complexity of our model. When we include speed and slope in our calculations the CO~2~ emissions decrease although we expected them to increase. This may be due to the fact that we have more data points with slower car velocity and only little inclinations. Lower speeds were connected with a lower emission value compared to when using one constant emission value over the whole distance. The same goes for the slope and speed where we have a lot of data points with only minor inclinations and therefore the emission values for these are lower than for the constant car emission vaue of the simple scenario. 
-For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. 
+For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1.
+
+*Ich versuche da noch die Labels für die User zu fixen.*
 
 ```{r plot car tracks above DHM, output = TRUE}
 # convert the car data to LV03 as the DHM is LV03
@@ -938,23 +940,33 @@ posmo_car_lv03_coord <- st_coordinates(posmo_car_lv03)
 posmo_car_lv03$X <- posmo_car_lv03_coord[,1]
 posmo_car_lv03$Y <- posmo_car_lv03_coord[,2]
 
+#| label: fig-nineteenthFigure
+#| fig-cap: Posmo tracks overlaid on the DHM25.
 # plot the dhm with the trajectories on top of it
-plot(dhm25)
-points(posmo_car_lv03$X, posmo_car_lv03$Y, col = factor(posmo_car_lv03$user_id))
+ggplot()+
+  geom_spatraster(data = dhm25)+
+  theme_minimal()+
+  labs(x = "E",
+       y = "N",
+       title = "Posmo car tracks over the DHM",
+       col = "User",
+       fill = "Elevation (m.a.s.l)")+
+  geom_sf(data = posmo_car_lv03, aes(col = user_id))+
+  coord_sf(datum = st_crs(21781))
 
 ```
 
-
-*könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
 
 The disparities when calculating the train emissions could originate from a more restrictive approach from Posmo when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the power unit of the train. Unfortunately, Posmo does not provide any information about their assumptions when calculating the emissions.
 
 For the car emission calculations our calculations were more optimistic than the ones from Posmo. An explanation could be that our values refer to the standards of new cars registered in the last few years. These may have higher requirements to be admitted and therefore do not correspond to the average emissions. Further, we do not know exactly how the emissions are calculated by the Posmo app as we could not find information on that.
 
 
-*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia). Das ist erledigt, du darfst gerne schieben, wohin du willst.
+*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia). *Das ist erledigt, du darfst gerne schieben, wohin du willst.*
 
 ```{r distance per user and transport mode, ouput = TRUE}
+#| label: fig-twentiethFigure
+#| fig-cap: Overview over travelled distance per user and transport mode.
 ggplot(posmo, aes(x = user_id, y = distance_km, fill = transport_mode))+
   geom_bar(stat = "identity", position = "stack") +
   labs(x = "User", 
