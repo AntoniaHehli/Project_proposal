@@ -30,7 +30,7 @@ library("terra")
 
 # Abstract
 
-The transport sector is an important source for carbon dioxide emission and therefore for climate change. The determination of the exact emissions are dependent on various factors. Using movement data from Posmo we determined the emissions based on approaches with increasing complexities. Thereby we used 3 different validated data sets. There are significant differences in the calculations of carbon emissions depending on the complexity of the approach. In our assessement an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
+The transport sector is an important source for carbon dioxide emission and therefore for climate change. The determination of the exact emissions are dependent on various factors. Using movement data from the Posmo app, we determined the emissions based on approaches with increasing complexities. Thereby, we used 3 different validated data sets. There are significant differences in the calculations of carbon emissions depending on the complexity of the approach. In our assessment an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
 
 # Introduction
 
@@ -675,7 +675,7 @@ emissions_new <- emissions |>
   rbind(emissions_car_speed)
 ```
 
-*restliche transport modes darstellen??*
+*restliche transport modes darstellen??* die sind dann im Vergleich, ansonsten haben wir das wieder doppelt. Oder habe ich etwas falsch verstanden?
 
 ```{r plot average weekly emission, output = TRUE}
 # create the bar chart
@@ -758,7 +758,7 @@ posmo_car |>
 ## Comparison of all three scenarios
 
 To assess the influence of increasing complexity for the emission values we focused our analysis solely on car emissions. When comparing the emissions calculated with the simple approach and the emissions calculated with the speed approach it is evident that the speed approach resulted in lower emission values for all users.
-When also including the emissions calculated using the slope and the resulting increase in carbon emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach (maybe more hilly??)
+When also including the emissions calculated using the slope and the resulting increase in carbon emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. *(maybe more hilly??)* Ich würde das in die Diskussion packen.
 
 ```{r plot grouped bar chart for all car emission scenarios, output = TRUE}
 emissions_car_simple$scenario <- "simple"
@@ -795,7 +795,7 @@ emissions_car_all_scenarios_bar
 
 ## Comparison Posmo emission calculations and our calculations
 
-Figure ?? shows the uncertainty which arises when calculating emission values for different transportation modes. The ranges of emission values are especially high for cars as well as buses which is visible in the increased length of the boxes which indicate the range of the possible emissions. User 1 thereby seems to use the car more often whereas user to seems to prefer taking the bus.
+Figure *??* shows the uncertainty which arises when calculating emission values for different transportation modes. The ranges of emission values are especially high for cars as well as buses which is visible in the increased length of the boxes which indicate the range of the possible emissions. User 1 thereby seems to use the car more often whereas user to seems to prefer taking the bus.
 The calculated emissions from Posmo and our own calculated emission vary a lot. Especially the calculated car and the train emissions show huge differences. For the car emissions Posmo calculates values which are higher than our values. Even the highest emission values we found in the literature is still rather small compared to the Posmo emissions. In contrast, the train emissions calculated by Posmo are a lot smaller than our own emission values.
 We determined the weekly emissions of the Posmo and our own calculations. Thereby the emissions calculated with Posmo provide much higher values than our weekly emissions calculated with the slope approach. 
 
@@ -907,7 +907,7 @@ posmo_emission_week <- emission_posmo_mode |>
   )
 ```
 
-*noch nicht gut, nicht wirklich schön oder viel aussagend; gibt es bei slope calculation auch eine range oder haben wir da nur jeweils einen wert berechnet??*
+*noch nicht gut, nicht wirklich schön oder viel aussagend; gibt es bei slope calculation auch eine range oder haben wir da nur jeweils einen wert berechnet??* Abend (Antonia)
 
 ```{r, output = TRUE}
 ggplot(posmo_emission_week) +
@@ -928,13 +928,17 @@ ggplot(posmo_emission_week) +
 
 # Discussion
 
-*vlt gibt posmo infos dazu wie emissionen berechet werden; vergleich mit eigenen annahmen.*
+*vlt gibt posmo infos dazu wie emissionen berechet werden; vergleich mit eigenen annahmen.* bisher nichts gefunden
 
-Posmo pursues a more restrictive approach when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the  power unit of the train. 
+Posmo pursues a more restrictive approach when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the power unit of the train. 
 
-For the car emission calculations our calculations were more optimistic than the ones from Posmo. An explanation could be that our values refer to the standards of new cars registered in the last few years. These may have higher requirements to be admitted and therefore do not correspond to the average emissions. 
+For the car emission calculations our calculations were more optimistic than the ones from Posmo. An explanation could be that our values refer to the standards of new cars registered in the last few years. These may have higher requirements to be admitted and therefore do not correspond to the average emissions. Further, we do not know exactly how the emissions are calculated by the Posmo app as we could not find information on that.
 
-*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können*
+*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia).
+
+Interesting to see is that the car emissions are lower when increasing the complexity of our model. When we include speed and slope in our calculations the CO~2~ emissions decrease although we expected them to increase. This may be due to the fact that we have more data points with slower car speed and only little inclinations. Slower speeds were connected with a lower emission value compared to when using one constant emission value over the whole distance. The same goes for the slope and speed where we have a lot of data points with only minor inclinations and therefore the emission values for these are lower than for the constant car emission vaue of the simple scenario. 
+
+For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. *könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
 
 ## Limitations
 
@@ -944,9 +948,11 @@ Further, we used very simplified approaches to calculate the emissions. We consi
 Furthermore, we also did not include the occupancy rate of any public transportation vehicle or the cars as we simple did not have easily accessible data about that. The same goes for the influence of the fuel type. We do not know what kind of cars our three users drive which is why we could not consider fuel type of cars in our analysis either.
 
 
-## Outlook
+## Outlook 
 
-There are many factors that could have been included in our analysis as stated above. One thing that we did not include and would suggest to do as a next step is including the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.
+*zu Conclusion umbenennen? und Outlook darin integrieren?*
+
+In our analysis, we calculated emission values for different transport modes and different scenarios for car emissions. With our data, we found that with increasing complexity the car emissions decrease. However, our data set consisted of only three data sets which is not representative enough to make general statements. In future studies, there are many factors that should be included in our analysis as stated above. One thing that we did not include and would suggest to do as a next step is including the emission increase due to acceleration. Acceleration also has an influence on the emissions of cars and emissions change significantly with changing speed (Dong et al., 2022). In the figure below, we can see where there are locations with acceleration and where there are locations with deceleration.
 
 ```{r plot acceleration and deceleration}
 #| label: fig-lastFigure
@@ -961,6 +967,8 @@ ggplot()+
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 ```
+
+Further, the analysis should be repeated with many more data sets and over a longer time span and use additional sources for different emission scenarios.
 
 ## Sources
 
@@ -1003,6 +1011,8 @@ Wikipedia (2022): Balmberg. URL: <https://de.wikipedia.org/wiki/Balmberg> (as at
 **Metcalfe, J.; Boulter & P.** (2022). Effect of speed on greenhouse gas emissions from road transport: a 
 review. Report prepared by Emission Impossible Ltd, and EMM Consulting, for Waka Kotahi, 
 December, 2022.
+
+**Solaymani, Saeed** (2019): CO2 emissions patterns in 7 top carbon emitter economies: The case of transport sector. In: Energy 168, pp. 989-1001.
 
 **Suarez, Jaime; Makridis, Michail; Anesiadou, Aikaterini; Komnos, Dimitrios; Ciuffo, Biagio; Fontaras, Georgios** (2022): Benchmarking the driver acceleration impact on vehicle energy consumption and CO2 emissions. In: Transportation Research Part D, Vol. 107.
 
