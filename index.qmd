@@ -30,37 +30,16 @@ library("terra")
 
 # Abstract
 
-Mobility is an important source for carbon dioxide emission whereas road transportation is responsible for around 20 percent of global carbon dioxide emissions. Using movement data from Posmo we determined the emissions based on approaches with increasing complexities. Thereby we used 3 different validated data sets. There are significant differences in the calculations of carbon emissions depending on the complexity of the approach. In our assessement an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
+The transport sector is an important source for carbon dioxide emission and therefore for climate change. The determination of the exact emissions are dependent on various factors. Using movement data from Posmo we determined the emissions based on approaches with increasing complexities. Thereby we used 3 different validated data sets. There are significant differences in the calculations of carbon emissions depending on the complexity of the approach. In our assessement an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
 
 # Introduction
 
-Road transportation is responsible for around 20 percent of global carbon dioxide emission whereof almost half of these emissions are caused by passenger road vehicles (Suarez et al., 2022). Due to the strongly negative impact of carbon dioxide emissions on climate change, they world widely receive gradually increasing concern (Dong et al., 2022). Driving behavior like acceleration as well as terrain characteristics such as an incline have valid impacts on carbon dioxide emissions (Dong et al., 2022; Suarez et al., 2022; Xu et al., 2022).
-However, road traffic is not the only type of traffic that causes carbon dioxide emissions. Trains, trams, and – when also taking production emissions into account – even bicycles cause carbon dioxide emissions. Therefore, we will also take these transportation modes into account. In this project, we analyze carbon dioxide emissions by different transportation types using different complexity levels as well as emission scenarios and compare these different setups with each other. We use validated movement data collected by the Posmo app from 3 students of the course Computational Movement Analysis in Spring 2023 at ZHAW.
-The objective of this report is to determine the weekly average emissions per person for each transportation mode. Thereby, we additionally want to analyse how much the complexity of an approach changes the results for carbon emissions calculations. Furthermore, we compare the results of our calculation with the emissions provided by Posmo and assess the differences for each transportation mode.
-
+The transport sector is one of the major contributors to the global carbon dioxide (CO~2~) emissions (Solaymani, 2019) with road transportation responsible for around 20 percent of emissions. Almost half of these emissions are caused by passenger road vehicles (Suarez et al., 2022). Due to the strong negative impact of CO~2~ emissions on climate change and the challenges arising, they are receiving gradually more concern (Dong et al., 2022). Driving behavior like acceleration as well as terrain characteristics such as an incline have valid impacts on carbon dioxide emissions (Dong et al., 2022; Suarez et al., 2022; Xu et al., 2022). However, not only road traffic is accountable for the emissions in the transport sector. Trains, trams, and – when also taking production emissions into account – even bicycles cause CO~2~ emissions (BAFU, 2023; Mobitool, 2020). 
+Using validated movement data collected by the Posmo app from 3 students we assess the CO~2~ emissions caused by different transportation modes. The objective of this report is to determine the weekly average emissions per person considering various transportation modes. Additionally, we want to analyse how much the complexity of a calculation approach changes the results for CO~2~ emissions. Furthermore, we compare the results of our calculation with the emission values provided by Posmo and assess the differences for each transportation mode.
 
 # Data and Methods
 
 ## Data Set
-
-For the analysis of the emissions, we included Posmo data from a data pool provided in the course. As the exact used transportation mode is crucial in our assessment we only included data sets which were validated, which reduced the included data sets to three. Finally, our data set includes 111’253 data points with the following attributes:
--	user_id
--	datetime
--	weekday
--	transport_mode
--	lon_x
--	lat_y
-The Posmo data has different temporal time spans for the different people. Data set 1 spans from April 1^st^ to May 11^th^ 2023, data set 2 from April 6^th^ to June 11^th^ and data set 3 from April 11^th^ to June 16^th^ 2023. The temporal resolution of our tracking data varies between 5 and 15 seconds.
-
-
-## Pre-Processing
-
-Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.
-We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account.
-Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS & ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). 
-We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  
-Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).
-
 
 ```{r define function loadPosmoData then load data and filter to only Switzerland}
 # define a function to load the posmo data
@@ -100,12 +79,28 @@ CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056
 CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
 
 # filter points that are within Switzerland
-posmo <- st_filter(posmo, CH_boundaries)
+posmo <- st_filter(posmo, CH_boundaries) |>
+  
+posmo <- posmo %>%
+  mutate(transport_mean = case_when(
+    transport_mean == "E_Bike" ~ "E-Bike",
+    transport_mean == "WheelChari" ~ "Wheel Chair",
+    transport_mean == "Cable_Car" ~ "Cable Car"))
 ```
+
+For the analysis of the emissions, we included Posmo data from a data pool provided in the course Computational Movement Analysis. We only considered the datasets where a validation of the means of transport determined by Posmo was conducted as a precise classification of the mode is crucial for our analysis. Therefore only 3 data sets are included (see Figure 1). It includes 111’253 datapoints with the following attributes:
+-	user_id
+-	datetime
+-	weekday
+-	transport_mode
+-	lon_x
+-	lat_y
+The three data sets were recorded over different time periods. Data set 1 ranges from April 1^st^ to May 11^th^ 2023, data set 2 from April 6^th^ to June 11^th^ and data set 3 from April 11^th^ to June 16^th^ 2023. The temporal resolution of our tracking data varies between 4 and 16 seconds.
+Finally, we included the emission values provided by Posmo in our analysis. 
 
 ```{r plot all Posmo tracks in Switzerland, output = TRUE}
 #| label: fig-firstFigure
-#| fig-cap: All posmo tracks from the three data set, colored by transport mode.
+#| fig-cap: All posmo tracks from the three data sets colored by transport mode.
 # check if it worked
 ggplot() +
   geom_sf(data = CH_cantons, alpha = 0) +
@@ -114,9 +109,11 @@ ggplot() +
   labs(x = "E",
        y = "N",
        title = "Posmo tracks in Switzerland") +
-  guides(color = guide_legend(title = "Transport Mode"))+
+  guides(color = guide_legend(title = "Transport Mode", )) +
   theme_minimal()
 ```
+
+## Pre-Processing
 
 ```{r filter transportation modes}
 # get all the transportation modes
@@ -130,7 +127,11 @@ posmo <- posmo |>
   filter(transport_mode %in% transport_modes)
 ```
 
-```{r define functions for moving window and calculate static points}
+Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.
+We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account.
+Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS & ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). 
+
+```{r define functions for moving window and calculate static points, output = TRUE}
 # functions to determine moving window
 movingWindowLag <- function(E, N, n){
   sqrt((lag(E, n) - E)^2 + (lag(N, n) - N)^2)
@@ -163,13 +164,13 @@ posmo <- posmo |>
 posmo <- posmo |>
     ungroup() |>
     mutate(static = stepMean < 215)
-```
 
-```{r plot static/non-static points, output = TRUE}
+
+# plot whether trajectories are static or not
+
 #| label: fig-secondFigure
 #| fig-cap: Static and non-static parts of the Posmo trajectories.
 
-# plot whether trajectories are static or not
 posmo |>
   ggplot(aes(X,Y)) +
   geom_point(aes(colour = static)) +
@@ -184,6 +185,9 @@ posmo |>
 posmo <- posmo |>
     filter(!static)
 ```
+
+We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  
+Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).
 
 ```{r read DHM convert Posmo data to LV03 and extract height information of DHM}
 # read the raster data using the terra package
@@ -607,31 +611,24 @@ emissions_car_slope <- posmo_car_emissions |>
 
 # Results
 
-The analysis of the weekly emissions of each user shows that for all free users the car and the train provide the highest emissions. Transportation means such as bus, tram, bike or e-bikes produce only small amounts of emissions. If you assess the distances which were travelled with each transport mean (in discussion)
-
-To assess the influence of increasing complexity for the emission values we focused our analysis solely on car emissions. When comparing the emissions calculated with the simple approach and the emissions calculated with the speed approach it is evident that the speed approach resulted in lower emission values for all users.
-When also including the emissions calculated using the slope and the resulting increase in carbon emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach (maybe more hilly??)
-Figure ?? shows the uncertainty which arises when calculating emission values for different transportation modes. The ranges of emission values are especially high for cars as well as buses which is visible in the increased length of the boxes which indicate the range of the possible emissions. User 1 thereby seems to use the car more often whereas user to seems to prefer taking the bus.
-The calculated emissions from Posmo and our own calculated emission vary a lot. Especially the calculated car and the train emissions show huge differences. For the car emissions Posmo calculates values which are higher than our values. Even the highest emission values we found in the literature is still rather small compared to the Posmo emissions. In contrast, the train emissions calculated by Posmo are a lot smaller than our own emission values.
-We determined the weekly emissions of the Posmo and our own calculations. Thereby the emissions calculated with Posmo provide much higher values than our weekly emissions calculated with the slope approach. 
-
-
 ## Simple scenario
 
-*evtl stacked barchart* --> schaue ich am freitag an
+*keine ahnung was man dazu gross schreiben sollte, nicht sehr interessante forschungsfrage mit nur 3 teilnehmern*
+
+The analysis of the weekly emissions of each user shows that for all three users the car and the train provide the highest emissions whereas the emissions from the bike and the e-bike are almost negligible. Buses and trams also produce only small amounts of emissions. If you assess the distances which were travelled with each transport mean (in discussion)
 
 ```{r plot weekly emissions for simple approach, output = TRUE}
 emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  geom_bar(stat = "identity", position = "stack") +
   labs(x = "User", 
        y = expression("CO"["2"]~ "Emissions [g/week]"),
        fill = "Transport mode") +
   labs(subtitle = "Car emissions calcualted based on distance")+
   ggtitle("Average Weeky Emissions per Transportation Mode & User") +
   theme_minimal()+
-  theme(plot.title = element_text(size = 8),
-        plot.subtitle = element_text(size = 7)) +
-  ylim(0, 27000)+
+  theme(plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8)) +
+  ylim(0, 48000)+
   theme(axis.text.x = element_blank())
 
 #| label: fig-seventhFigure
@@ -660,92 +657,13 @@ emissions_plot_simple <- ggplot() +
 emissions_plot_simple
 ```
 
-*nicht bereits vorhin nach car gefilteret?? braucht es das nochmals?* Das ist ein anderes File. Hier sind die Emissionen berechnet und vorher waren es die ursprünglichen Posmodaten. Also ja ;)
+## Speed scenario
 
-*hier evtl noch user 1 , 2 und 3 anschreiben *
-
-```{r plot overall emission of car for simple approach, output = TRUE}
+```{r prepare data to enable comparison with Posmo emission data}
 # filter the simple emission values to only "Car" values
 emissions_car_simple <- emissions |> 
   filter(transport_mode == "Car")
 
-# create a bar chart for only car emissions
-plot_car_em_simple <- ggplot(emissions_car_simple, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users", 
-       y = expression("CO"["2"]~ "Emissions [g/week]"),
-       fill = "User",
-       subtitle = "Car emissions calculated using distance") +
-  ggtitle("Overall Car Emissions for Simple Approach") +
-  geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 3, vjust = 1)+
-  ylim(0, 27000)+
-  theme_minimal()+
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 6),
-        legend.position = "none",
-        plot.title = element_text(size = 10),
-        plot.subtitle = element_text(size = 8))
-
-#| label: fig-ninthFigure
-#| fig-cap: CO~2~ emission based on distances per user normalized over 7 days for transport mode car.
-plot_car_em_simple
-```
-
-## Speed scenario
-
-*könnte man rausnehmen, hat unten schon plot mit genau der selben info, einfach noch zusammen mit simple scenario.. aber ansonsten redundant*
-
-```{r plot overall emission of car for speed approach, output = TRUE}
-# create the bar chart
-emissions_bar_speed <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users", 
-       y = expression("CO"["2"]~ "Emissions [g/week]"), 
-       fill = "User",
-       subtitle = "Car emissions calculated based on speed.") +
-  ggtitle("Overall Car Emissions for Speed Approach") +
-  geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 3, vjust = 1)+
-  theme_minimal()+
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 6),
-        legend.position = "none",
-        plot.title = element_text(size = 10),
-        plot.subtitle = element_text(size = 8))
-
-#| label: fig-tenthFigure
-#| fig-cap: Car CO~2~ emission based on speed per user normalized over 7 days.
-emissions_bar_speed
-```
-
-## Comparision speed and simple scenario
-
-*evtl könnte man problem umgehen mit zu langen titeln umgehen, wenn man beide approaches im selben plot darstellt.. sprich man hat für user 1 zwei kolonnen (1 für simple eine für speed approach), daneben für user 2 und 3 --> könnte man evtl plot etw grösser machen* --> schaue ich fr an
-
-```{r plot overall emission of car for comparison of both approaches, output = TRUE}
-plot_car_em <- ggplot(emissions_car_speed, aes(x = user_id, y = co2_emissions_g_per_w, fill = user_id)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users", 
-       y = expression("CO"["2"]~ "Emissions [g/week]"), 
-       fill = "User",
-       subtitle = "Car emissions calculated using speed") +
-  ggtitle("Overall Car Emissions for Speed Approach") +
-  geom_text(aes(label = round(co2_emissions_g_per_w, 1)), size = 3, vjust = 1)+
-  ylim(0, 27000)+
-  theme_minimal()+
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 6),
-        legend.position = "none",
-        plot.title = element_text(size = 10),
-        plot.subtitle = element_text(size = 8))
-
-#| label: fig-eleventhFigure
-#| fig-cap: Comparison between CO~2~ emission of transport mode car using a simple distance-based scenario (left) and a scenario based on driving speed (right).
-# plot them next to each other
-grid.arrange(plot_car_em_simple, 
-             plot_car_em, ncol = 2)
-```
-
-```{r prepare data to enable comparison with Posmo emission data}
 # add a column transport mode to the calculated car emissions using speed information as well
 emissions_car_speed <- emissions_car_speed |>
   mutate(transport_mode = "Car")
@@ -757,31 +675,66 @@ emissions_new <- emissions |>
   rbind(emissions_car_speed)
 ```
 
-*plot ist leider nicht sehr viel aussagend, verändert wird jeweils nur emissionen von car, was auch sinn macht, da wir ja nur approach für car berechnet haben... --> alle anderen transport mode bleiben gleich... evtl nur vergleich von car emissionen (aber das haben wir oben schon)
+*restliche transport modes darstellen??*
 
 ```{r plot average weekly emission, output = TRUE}
 # create the bar chart
 emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emissions_g_per_w, 
                                                       fill = transport_mode)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  geom_bar(stat = "identity", position = "stack") +
   labs(x = "Users", 
        y = expression("CO"["2"]~ "Emissions [g/week]"), 
        fill = "Transport Mode",
        subtitle = "Car emissions calculated based on speed") +
   ggtitle("Average Weeky Emissions per Transportation Mode & User")+
-  ylim(0, 27000)+
+  ylim(0, 45000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        plot.title = element_text(size = 8),
-        plot.subtitle = element_text(size = 7))
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
 
 #| label: fig-twelthFigure
 #| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).
-# plot them next to each other
-grid.arrange(emissions_bar_simple, emissions_plot_speed_car, ncol = 2)
+emissions_plot_speed_car
 ```
 
 ## Slope scenario
+
+```{r add car emissions calculated using slope to emission data and create bar chart, output = TRUE}
+# add a column transport mode to the calculated car emissions using speed information as well
+emissions_car_slope <- emissions_car_slope |>
+  mutate(transport_mode = "Car") |>
+  subset(select = c(user_id, co2_emissions_g_per_w_slope, transport_mode)) |>
+  st_drop_geometry() |>
+  rename(co2_emissions_g_per_w = co2_emissions_g_per_w_slope)
+
+emissions_new_slope <- emissions |>
+  # remove the 'old' emission values for car
+  filter(transport_mode != "Car") |>
+  # replace these values with the new car emissions calculated based on speed
+  rbind(emissions_car_slope)
+
+# create the bar chart
+emissions_plot_slope_car <- ggplot(emissions_new_slope, 
+                                   aes(x = user_id, 
+                                       y = co2_emissions_g_per_w, 
+                                       fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Users", 
+       y = expression("CO"["2"]~ "Emissions [g/week]"), 
+       fill = "Transport Mode",
+       subtitle = "Car emissions calculated based on slope") +
+  ggtitle("Average Weekly Emissions per Transport Mode & User") +
+  ylim(0, 48000)+
+  theme_minimal()+
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
+
+#| label: fig-seventeenthFigure
+#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.
+emissions_plot_slope_car
+```
 
 ```{r plot locations with emission increase due to slope, output = TRUE}
 #| label: fig-thirteenthFigure
@@ -802,85 +755,49 @@ posmo_car |>
   theme(plot.title = element_text(size = 14))
 ```
 
-## Comparison slope with simple and speed scenario
+## Comparison of all three scenarios
 
-*evtl auch hier besser darstellbar, wenn alles in einen plot integriert werden kann..* --> könnte bspw. ein plot mit allen machen, dann wäre es auch etw. weniger code. 
+To assess the influence of increasing complexity for the emission values we focused our analysis solely on car emissions. When comparing the emissions calculated with the simple approach and the emissions calculated with the speed approach it is evident that the speed approach resulted in lower emission values for all users.
+When also including the emissions calculated using the slope and the resulting increase in carbon emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach (maybe more hilly??)
 
-```{r plot overall emission of car for comparison of all three approaches, output = TRUE}
-# plot the car emissions with slope considered
-plot_car_em_slope <- ggplot(emissions_car_slope, aes(x = user_id, y = co2_emissions_g_per_w_slope, fill = user_id)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Users",
-       y = expression("CO"["2"]~ "Emissions [g/week]"), 
-       fill = "User",
-       subtitle = "Car emissions calculated using slope") +
-  ggtitle("Overall Car Emissions for Slope Approach") +
-  geom_text(aes(label = round(co2_emissions_g_per_w_slope, 1)), size = 3, vjust = 1)+
-  ylim(0, 27000)+
-  theme_minimal()+
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 6),
-        legend.text = element_blank(),
-        plot.title = element_text(size = 10),
-        plot.subtitle = element_text(size = 8))
+```{r plot grouped bar chart for all car emission scenarios, output = TRUE}
+emissions_car_simple$scenario <- "simple"
+emissions_car_speed$scenario <- "speed"
+emissions_car_slope$scenario <- "slope"
 
-#| label: fig-fourteenthFigure
-#| fig-cap: Comparison car CO~2~ emission of three different scenarios. Top: distance-based, middle: speed-based, bottom: slope- and speed-based.
-# plot all three histograms next to each other
-grid.arrange(plot_car_em_simple, plot_car_em, plot_car_em_slope, ncol = 1)
-```
+emissions_car_all_scenarios <- data.frame(user_id = c(emissions_car_simple$user_id, emissions_car_slope$user_id,
+                                                      emissions_car_speed$user_id),
+                                          co2_emissions_g_per_w = c(emissions_car_simple$co2_emissions_g_per_w,
+                                                                    emissions_car_speed$co2_emissions_g_per_w,
+                                                                    emissions_car_slope$co2_emissions_g_per_w),
+                                          scenario = c(emissions_car_simple$scenario,emissions_car_speed$scenario, 
+                                                       emissions_car_slope$scenario))
 
-*siehe oben*
-
-```{r add car emissions calculated using slope to emission data and create bar chart}
-# add a column transport mode to the calculated car emissions using speed information as well
-emissions_car_slope <- emissions_car_slope |>
-  mutate(transport_mode = "Car") |>
-  subset(select = c(user_id, co2_emissions_g_per_w_slope, transport_mode)) |>
-  st_drop_geometry() |>
-  rename(co2_emissions_g_per_w = co2_emissions_g_per_w_slope)
-
-emissions_new_slope <- emissions |>
-  # remove the 'old' emission values for car
-  filter(transport_mode != "Car") |>
-  # replace these values with the new car emissions calculated based on speed
-  rbind(emissions_car_slope)
-
-# create the bar chart
-emissions_plot_slope_car <- ggplot(emissions_new_slope, 
-                                   aes(x = user_id, 
-                                       y = co2_emissions_g_per_w, 
-                                       fill = transport_mode)) +
-  geom_bar(stat = "identity", position = "dodge") +
+emissions_car_all_scenarios_bar <- ggplot(emissions_car_all_scenarios, aes(x = user_id, y = co2_emissions_g_per_w, fill = scenario)) + 
+  geom_bar(stat = "identity", position = "dodge")+
   labs(x = "Users", 
-       y = expression("CO"["2"]~ "Emissions [g/week]"), 
-       fill = "Transport Mode",
-       subtitle = "Car emissions calculated based on slope") +
-  ggtitle("Average Weekly Emissions per Transport Mode & User") +
-  ylim(0, 27000)+
+       y = expression("CO"["2"]~ "Emissions [g/week]"),
+       fill = "Approach",
+       subtitle = "Car emissions calculated using different approaches") +
+  ggtitle("Overall Car Emissions for All Approaches") +
+  geom_text(aes(label = round(co2_emissions_g_per_w, 1)), position = position_dodge(width = 0.9), size = 3, vjust = -1.5) +
+  ylim(0, 25000)+
   theme_minimal()+
   theme(axis.text.x = element_blank(),
-        plot.title = element_text(size = 8),
-        plot.subtitle = element_text(size = 7))
-```
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14),
+        plot.subtitle = element_text(size = 12))
 
-*achtung hier ist figure caption für alle dieselbe.. aber sinnvoll? siehe oben*
-
-```{r plot bar chart for emission of all transport modes using different approaches for car, output = TRUE}
-#| label: fig-fifteenthFigure
-#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on distance.
-emissions_bar_simple + labs(subtitle = "Car emissions calculated based on distance")
-
-#| label: fig-sixteenthFigure
-#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on speed.
-emissions_plot_speed_car
-
-#| label: fig-seventeenthFigure
-#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.
-emissions_plot_slope_car
+#| label: fig-thirteenthFigure
+#| fig-cap: CO~2~ emission values for all emission scenarios of car emissions per user and week.
+emissions_car_all_scenarios_bar
 ```
 
 ## Comparison Posmo emission calculations and our calculations
+
+Figure ?? shows the uncertainty which arises when calculating emission values for different transportation modes. The ranges of emission values are especially high for cars as well as buses which is visible in the increased length of the boxes which indicate the range of the possible emissions. User 1 thereby seems to use the car more often whereas user to seems to prefer taking the bus.
+The calculated emissions from Posmo and our own calculated emission vary a lot. Especially the calculated car and the train emissions show huge differences. For the car emissions Posmo calculates values which are higher than our values. Even the highest emission values we found in the literature is still rather small compared to the Posmo emissions. In contrast, the train emissions calculated by Posmo are a lot smaller than our own emission values.
+We determined the weekly emissions of the Posmo and our own calculations. Thereby the emissions calculated with Posmo provide much higher values than our weekly emissions calculated with the slope approach. 
 
 ```{r calculate daily emissions}
 # define a function to get the daily emissions
