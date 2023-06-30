@@ -30,11 +30,11 @@ library("terra")
 
 # Abstract
 
-The transport sector is an important source for carbon dioxide emission and therefore for climate change. The determination of the exact emissions are dependent on various factors. Using movement data from the Posmo app, we determined the emissions based on approaches with increasing complexities. Thereby, we used 3 different validated data sets. There are significant differences in the calculations of carbon emissions depending on the complexity of the approach. In our assessment an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
+The transport sector is an important source for carbon dioxide emission and therefore for climate change. The determination of the exact emissions are dependent on various factors. Using movement data from the Posmo app, we determined the emissions based on approaches with increasing complexities. Thereby, we used 3 different validated data sets. There are significant differences in the calculations of CO~2~ emissions depending on the complexity of the approach. In our assessment an increased complexity lead to decreased emissions. Our study revealed that the calculation of emissions depends on many variables and factors which are difficult to include in a holistic analysis.  
 
 # Introduction
 
-The transport sector is one of the major contributors to the global carbon dioxide (CO~2~) emissions (Solaymani, 2019) with road transportation responsible for around 20 percent of emissions. Almost half of these emissions are caused by passenger road vehicles (Suarez et al., 2022). Due to the strong negative impact of CO~2~ emissions on climate change and the challenges arising, they are receiving gradually more concern (Dong et al., 2022). Driving behavior like acceleration as well as terrain characteristics such as an incline have valid impacts on carbon dioxide emissions (Dong et al., 2022; Suarez et al., 2022; Xu et al., 2022). However, not only road traffic is accountable for the emissions in the transport sector. Trains, trams, and – when also taking production emissions into account – even bicycles cause CO~2~ emissions (BAFU, 2023; Mobitool, 2020). 
+The transport sector is one of the major contributors to the global carbon dioxide (CO~2~) emissions (Solaymani, 2019) with road transportation responsible for around 20 percent of emissions. Almost half of these emissions are caused by passenger road vehicles (Suarez et al., 2022). Due to the strong negative impact of CO~2~ emissions on climate change and the challenges arising, they are receiving gradually more concern (Dong et al., 2022). Driving behavior like acceleration as well as terrain characteristics such as an incline have valid impacts on CO~2~ emissions (Dong et al., 2022; Suarez et al., 2022; Xu et al., 2022). However, not only road traffic is accountable for the emissions in the transport sector. Trains, trams, and – when also taking production emissions into account – even bicycles cause CO~2~ emissions (BAFU, 2023; Mobitool, 2020). 
 Using validated movement data collected by the Posmo app from 3 students we assess the CO~2~ emissions caused by different transportation modes. The objective of this report is to determine the weekly average emissions per person considering various transportation modes. Additionally, we want to analyse how much the complexity of a calculation approach changes the results for CO~2~ emissions. Furthermore, we compare the results of our calculation with the emission values provided by Posmo and assess the differences for each transportation mode.
 
 # Data and Methods
@@ -80,12 +80,6 @@ CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
 
 # filter points that are within Switzerland
 posmo <- st_filter(posmo, CH_boundaries) |>
-  
-posmo <- posmo %>%
-  mutate(transport_mean = case_when(
-    transport_mean == "E_Bike" ~ "E-Bike",
-    transport_mean == "WheelChari" ~ "Wheel Chair",
-    transport_mean == "Cable_Car" ~ "Cable Car"))
 ```
 
 For the analysis of the emissions, we included Posmo data from a data pool provided in the course Computational Movement Analysis. We only considered the datasets where a validation of the means of transport determined by Posmo was conducted as a precise classification of the mode is crucial for our analysis. Therefore only 3 data sets are included (see Figure 1). It includes 111’253 datapoints with the following attributes:
@@ -127,9 +121,9 @@ posmo <- posmo |>
   filter(transport_mode %in% transport_modes)
 ```
 
-Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission data is mostly based on Swiss and German data and differences in emissions in other countries are possible. Second, we included a slope analysis which would have been too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.
-We only included transportation modes which generate carbon dioxide emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included in our analysis car, bus, train, tram as well as e-bikes and bikes as they produce carbon emissions when taking the production process into account.
-Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS & ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters which a bicycle could drive in 60 seconds (moving window includes 6 time stamps). 
+Pre-processing was needed to be able to use our data set for the further analysis. We decided to reduce our assessment area to Switzerland. First, our emission values are mostly based on Swiss and German data and transport modes in other countries may have different emissions. Second, we conducted a slope analysis which would have been computationally too expensive to calculate for multiple countries. The outlines of Switzerland were pre-processed using QGIS.
+We focused on transportation modes which generate CO~2~ emissions. We do not include airplanes in our considerations as we are only going to focus on trajectories in Switzerland. Finally, we included car, bus, train, tram as well as e-bikes and bikes as they produce CO~2~ emissions when taking the production process into account.
+Additionally, we removed all static points as we are interested in the emissions of moving vehicles. We thereby considered a threshold of 215m. The average velocity of a bicycle is 12.8 km/h (BFS & ARE, 2023). With an assumed average tracking cycle of 10 seconds this would correspond with a distance of around 215 meters. 
 
 ```{r define functions for moving window and calculate static points, output = TRUE}
 # functions to determine moving window
@@ -186,8 +180,7 @@ posmo <- posmo |>
     filter(!static)
 ```
 
-We filtered velocities which exceeded 200 km/h, which is the highest velocities some InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of our slowest transportation mode, bicycle.  
-Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° as the steepest mountain pass slope in Switzerland is around this value (Wikipedia, 2022).
+We filtered velocities exceeding 200 km/h, which is the highest velocities InterCity trains in Switzerland travel (Knupfer, 2014). We also set the minimum speed to 10 as this corresponds with the average velocity of bicycles. Furthermore, we excluded all slopes which are steeper than 25%, which corresponds to 14.4° being the steepest mountain pass slope in Switzerland (Wikipedia, 2022).
 
 ```{r read DHM convert Posmo data to LV03 and extract height information of DHM}
 # read the raster data using the terra package
@@ -210,18 +203,13 @@ posmo$height <- height_dhm$dhm25_grid_raster
 
 # Methods
 
-To calculate the emissions we first had to determine values for the carbon dioxide emissions for the considered transportation means. As they strongly vary depending on the sources we included multiple values for some of the transportation modes. 
-To calculate our weekly emission we determined the average value of the collected emission values for each transportation mode and multiplied it with the distance. 
-As the time period when people collected Posmo data does not correspond we needed to normalize the emission values for each person to determine the 7-days average. 
-In order to determine the influence of the complexity of an approach we also considered other factors such as the effect of velocity or slope on the carbon emissions. These additional factors were only calculated and compared for the emissions of cars as this is the transportat mode that each can control a lot themselves when driving as compared to when travelling in a train or bus for example.
+To calculate the emissions we first had to determine values for the CO~2~ emissions for the considered transportation means. As they strongly vary depending on the sources we included multiple values for some of the transportation modes. In order to determine the influence of the complexity of an approach we also considered other factors such as the effect of velocity or slope on the CO~2~ emissions.
+Thus, we pursued three different approaches: a simple one, where we multiplied the average emission value by the distance; a speed approach and a slope approach. To be able to compare the results we calculated the 7-days average because the time periods of the data sets are varying.
+For the speed approach we used information about the change in car emission for velocities between 100 and 130 km/h by the Umweltbundesamt (n.d.). To estimate emissions at lower velocities we used a non-linear least squares regression. We assumed that the reduction in CO~2~ emissions decreases at lower velocities and therefore set a threshold at 75 km/h at which CO~2~ emissions are constant (Metcalfe & Boulter, 2022).
 
-**Speed**
+To calculate the increase in CO~2~ emission due to inclination, we used the reference values from Xu et al. (2020). We fitted a linear model that calculated the percent of increase in emissions for a given slope for each 10 km/h. With these linear models, we calculated the increase in emission for our Posmo data points based on the calculated slope. All the increases at each Posmo data point were then summed up for one user ID and divided by the total number of observations per user. This way we got the mean increase in car CO~2~ emission per user due to inclination. We only considered an increase in emission when passing a positive slope. We did not include potential reductions in emissions when going downhill.
 
-Information about the change in car emission for velocities between 100 and 130 km/h were provided by the Umweltbundesamt (n.d.). To estimate the emission for lower velocities we used a non-linear least squares regression. We assumed that the reduction in carbon emissions decreases at lower velocities and therefore set a threshold at 75 km/h where the carbon emissions are constant (Metcalfe & Boulter, 2022).
-
-**Slope**
-
-For calculating the increase in carbon dioxide emission due to inclination when driving, we used the reference values from Xu et al. (2020). In their paper, they measured emissions based on inclination and speed for two different vehicles, a small and a large one. Therefore, in a first step, we calculated the average of these two vehicle types. We then fit a linear model for each 10 km/h speed that calculates the emission increase in percentage based on a certain road inclination for the respective speed category. With these linear models, we calculated the increase in emission for each of our Posmo data points. All the increases at each Posmo data point were then summed up for one user ID and divided by the total number of observations per user. This way we got the mean increase in car carbon dioxide emission per user due to inclination. We only considered an increase in emission when passing a positive slope. We did not include potential reductions in emissions when going downhill.
+*For calculating the increase in CO~2~ emission due to inclination when driving, we used the reference values from Xu et al. (2020). In their paper, they measured emissions based on inclination and speed for two different vehicles, a small and a large one. Therefore, in a first step, we calculated the average of these two vehicle types. We then fit a linear model for each 10 km/h speed that calculates the emission increase in percentage based on a certain road inclination for the respective speed category. With these linear models, we calculated the increase in emission for each of our Posmo data points. All the increases at each Posmo data point were then summed up for one user ID and divided by the total number of observations per user. This way we got the mean increase in car CO~2~ emission per user due to inclination. We only considered an increase in emission when passing a positive slope. We did not include potential reductions in emissions when going downhill.*
 
 ```{r create dataframe with constants for emissions}
 # for cars: we have various sources
@@ -615,7 +603,7 @@ emissions_car_slope <- posmo_car_emissions |>
 
 *keine ahnung was man dazu gross schreiben sollte, nicht sehr interessante forschungsfrage mit nur 3 teilnehmern*
 
-The analysis of the weekly emissions of each user shows that for all three users the car and the train provide the highest emissions whereas the emissions from the bike and the e-bike are almost negligible. Buses and trams also produce only small amounts of emissions. If you assess the distances which were travelled with each transport mean (in discussion)
+The analysis of the weekly emissions of each user shows that for all three users the car and the train provide the highest emissions whereas the emissions from the bike and the e-bike are almost negligible. Buses and trams also produce only small amounts of emissions. *probably bring this in comparison with distance of each mode?*
 
 ```{r plot weekly emissions for simple approach, output = TRUE}
 emissions_bar_simple <- ggplot(emissions, aes(x = user_id, y = co2_emissions_g_per_w, fill = transport_mode)) +
@@ -675,7 +663,7 @@ emissions_new <- emissions |>
   rbind(emissions_car_speed)
 ```
 
-*restliche transport modes darstellen??* die sind dann im Vergleich, ansonsten haben wir das wieder doppelt. Oder habe ich etwas falsch verstanden?
+*restliche transport modes darstellen??* die sind dann im Vergleich, ansonsten haben wir das wieder doppelt. Oder habe ich etwas falsch verstanden? *sorry doof geschrieben: macht es sinn die anderen transport modes (train, bus, bike) hier darzustellen, da sich ja logischerweise nur car ändert; evtl. nur abbildung mit car? oder mache ich einen überlegungsfehler*
 
 ```{r plot average weekly emission, output = TRUE}
 # create the bar chart
@@ -758,7 +746,7 @@ posmo_car |>
 ## Comparison of all three scenarios
 
 To assess the influence of increasing complexity for the emission values we focused our analysis solely on car emissions. When comparing the emissions calculated with the simple approach and the emissions calculated with the speed approach it is evident that the speed approach resulted in lower emission values for all users.
-When also including the emissions calculated using the slope and the resulting increase in carbon emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. *(maybe more hilly??)* Ich würde das in die Diskussion packen.
+When also including the emissions calculated using the slope and the resulting increase in CO~2~ emissions the emission values for the speed and the slope approach are quite similar. For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. 
 
 ```{r plot grouped bar chart for all car emission scenarios, output = TRUE}
 emissions_car_simple$scenario <- "simple"
@@ -928,17 +916,18 @@ ggplot(posmo_emission_week) +
 
 # Discussion
 
-*vlt gibt posmo infos dazu wie emissionen berechet werden; vergleich mit eigenen annahmen.* bisher nichts gefunden
+The comparison of our three approaches shows that the car emissions decrease when increasing the complexity of our model. When we include speed and slope in our calculations the CO~2~ emissions decrease although we expected them to increase. This may be due to the fact that we have more data points with slower car velocity and only little inclinations. Lower speeds were connected with a lower emission value compared to when using one constant emission value over the whole distance. The same goes for the slope and speed where we have a lot of data points with only minor inclinations and therefore the emission values for these are lower than for the constant car emission vaue of the simple scenario. 
+For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. *könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
 
-Posmo pursues a more restrictive approach when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the power unit of the train. 
+The disparities when calculating the train emissions could originate from a more restrictive approach from Posmo when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the power unit of the train. Unfortunately, Posmo does not provide any information about their assumptions when calculating the emissions.
 
 For the car emission calculations our calculations were more optimistic than the ones from Posmo. An explanation could be that our values refer to the standards of new cars registered in the last few years. These may have higher requirements to be admitted and therefore do not correspond to the average emissions. Further, we do not know exactly how the emissions are calculated by the Posmo app as we could not find information on that.
 
+
 *evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia).
 
-Interesting to see is that the car emissions are lower when increasing the complexity of our model. When we include speed and slope in our calculations the CO~2~ emissions decrease although we expected them to increase. This may be due to the fact that we have more data points with slower car speed and only little inclinations. Slower speeds were connected with a lower emission value compared to when using one constant emission value over the whole distance. The same goes for the slope and speed where we have a lot of data points with only minor inclinations and therefore the emission values for these are lower than for the constant car emission vaue of the simple scenario. 
 
-For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. *könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
+
 
 ## Limitations
 
