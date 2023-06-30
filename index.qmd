@@ -79,7 +79,7 @@ CH_boundaries <- st_read("data/swissboundaries3D/CH_boundaries.gpkg", crs = 2056
 CH_cantons <- st_read("data/swissboundaries3D/CH_cantons.gpkg", crs = 2056)
 
 # filter points that are within Switzerland
-posmo <- st_filter(posmo, CH_boundaries) |>
+posmo <- st_filter(posmo, CH_boundaries)
 ```
 
 For the analysis of the emissions, we included Posmo data from a data pool provided in the course Computational Movement Analysis. We only considered the datasets where a validation of the means of transport determined by Posmo was conducted as a precise classification of the mode is crucial for our analysis. Therefore only 3 data sets are included (see Figure 1). It includes 111’253 datapoints with the following attributes:
@@ -814,6 +814,8 @@ emission_CH_mode <- left_join(emission_avg, emission_min, by = c("user_id", "tra
   left_join(emission_max, by = c("user_id", "transport_mode"))
 ```
 
+
+*ich habe in dem Chunk da unten "-Airplane" rausgenommen, das gab einen Fehler irgendwie"
 ```{r read in emission values from Posmo, message = FALSE}
 posmo_emission_1 <- read_delim("data/Emission_Posmo_1.csv", delim = ";") |>
   mutate(
@@ -830,13 +832,15 @@ posmo_emission_2 <- read_delim("data/Emission_Posmo_2.csv", delim = ";") |>
 posmo_emission <- rbind(posmo_emission_1, posmo_emission_2)
 
 emission_posmo_mode <- posmo_emission |>
-  tidyr::gather(transport_mode, emission, -user_id, -Date, -Airplane, -Notes, -Sum_all, -Sum_CH) |>
+  tidyr::gather(transport_mode, emission, -user_id, -Date, -Notes, -Sum_all, -Sum_CH) |>
   mutate(origin = "posmo") |>
   dplyr::select(user_id, Date, transport_mode, emission, origin) |>
   aggregate(emission ~ user_id + transport_mode, sum)
 
 emission_cal_posmo <- left_join(emission_posmo_mode, emission_CH_mode, by = c("user_id", "transport_mode"))
 ```
+
+*Titel von diesem Plot falsch??**
 
 ```{r, output = TRUE}
 #| label: fig-eighteenthFigure
@@ -857,6 +861,8 @@ ggplot(data = emission_cal_posmo)+
        x = "Transport Mode",
        y = expression("CO"["2"] ~ "Emission [g/km]"))
 ```
+
+*R chunk titel fehlt*
 
 ```{r}
 
@@ -896,6 +902,7 @@ posmo_emission_week <- emission_posmo_mode |>
 ```
 
 *noch nicht gut, nicht wirklich schön oder viel aussagend; gibt es bei slope calculation auch eine range oder haben wir da nur jeweils einen wert berechnet??* Abend (Antonia)
+*Ich habe in diesem Plot gar nichts gesehen, nur weiss und Achsen*
 
 ```{r, output = TRUE}
 ggplot(posmo_emission_week) +
@@ -917,15 +924,46 @@ ggplot(posmo_emission_week) +
 # Discussion
 
 The comparison of our three approaches shows that the car emissions decrease when increasing the complexity of our model. When we include speed and slope in our calculations the CO~2~ emissions decrease although we expected them to increase. This may be due to the fact that we have more data points with slower car velocity and only little inclinations. Lower speeds were connected with a lower emission value compared to when using one constant emission value over the whole distance. The same goes for the slope and speed where we have a lot of data points with only minor inclinations and therefore the emission values for these are lower than for the constant car emission vaue of the simple scenario. 
-For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. *könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
+For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1. 
+
+```{r plot car tracks above DHM, output = TRUE}
+# convert the car data to LV03 as the DHM is LV03
+posmo_car_lv03 <- posmo_lv03 |>
+  filter(transport_mode == "Car")
+
+# get the coordinates of this newly created data set
+posmo_car_lv03_coord <- st_coordinates(posmo_car_lv03)
+
+# add them back to the data frame
+posmo_car_lv03$X <- posmo_car_lv03_coord[,1]
+posmo_car_lv03$Y <- posmo_car_lv03_coord[,2]
+
+# plot the dhm with the trajectories on top of it
+plot(dhm25)
+points(posmo_car_lv03$X, posmo_car_lv03$Y, col = factor(posmo_car_lv03$user_id))
+
+```
+
+
+*könnte man hier nur die Autotracks von 1, 2 und 3 filtern und über dem Plot vom DHM darstellen, also ganzes DHM plotten und dann die drei Tracks drüber. um diese These zu unterstützen?* *Das könnte ich (Antonia) am Abend anschauen*
 
 The disparities when calculating the train emissions could originate from a more restrictive approach from Posmo when calculating the emissions for trains. These differences could be explained by different assumptions in capacity utilization or the power unit of the train. Unfortunately, Posmo does not provide any information about their assumptions when calculating the emissions.
 
 For the car emission calculations our calculations were more optimistic than the ones from Posmo. An explanation could be that our values refer to the standards of new cars registered in the last few years. These may have higher requirements to be admitted and therefore do not correspond to the average emissions. Further, we do not know exactly how the emissions are calculated by the Posmo app as we could not find information on that.
 
 
-*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia).
+*evtl wäre vorher mal noch eine abbildung gut wo wir sagen was die zurückgelegten distanzen sind pro verkehrsmittel um etw. relativieren zu können* Gute Idee! Kann ich auch versuchen mir am Abend anzuschauen (Antonia). Das ist erledigt, du darfst gerne schieben, wohin du willst.
 
+```{r distance per user and transport mode, ouput = TRUE}
+ggplot(posmo, aes(x = user_id, y = distance_km, fill = transport_mode))+
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "User", 
+       y = expression("Distance [km]"),
+       fill = "Transport mode") +
+  ggtitle("Distance travelled per User and Transport Mode") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+```
 
 
 
