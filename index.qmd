@@ -24,9 +24,11 @@ abstract: The transport sector is an important source for carbon dioxide emissio
 library("dplyr")
 library("ggplot2")
 library("gridExtra")
+library("leaflet")
 library("lubridate")
 library("readr")
 library("raster")
+library("RColorBrewer")
 library("sf")
 library("terra")
 library("tidyterra")
@@ -594,11 +596,15 @@ posmo_slope_car_increase <- posmo_slope_car_increase|>
   mutate(mean_increase_perc = sum_increase_perc/observations) |> 
   st_drop_geometry()
 
+# filter the simple emission values to only "Car" values
+emissions_car_simple <- emissions |> 
+  filter(transport_mode == "Car")
+
 # join the car emissions with the increase of emission because of slope
-posmo_car_emissions <- posmo_car_emissions |> 
+posmo_car_emissions_simple <- emissions_car_simple |> 
   left_join(posmo_slope_car_increase, by = "user_id")
 
-emissions_car_slope <- posmo_car_emissions |>
+emissions_car_slope <- posmo_car_emissions_simple |>
   mutate(co2_emissions_g_per_w_slope = co2_emissions_g_per_w * (1 + mean_increase_perc/100))
 ```
 
@@ -711,14 +717,9 @@ ggplot() +
   coord_sf(datum = st_crs(2056))+
   theme_minimal()+
   theme(plot.title = element_text(size = 14))
-
 ```
 
 ```{r prepare data to enable comparison with Posmo emission data}
-# filter the simple emission values to only "Car" values
-emissions_car_simple <- emissions |> 
-  filter(transport_mode == "Car")
-
 # add a column mode of transport to the calculated car emissions using speed information as well
 emissions_car_speed <- emissions_car_speed |>
   mutate(transport_mode = "Car")
@@ -797,18 +798,6 @@ emissions_car_all_scenarios_bar <- ggplot(emissions_car_all_scenarios, aes(x = u
 #| label: fig-tenthFigure
 #| fig-cap: CO~2~ emission values for all emission scenarios of car emissions per user and week.
 emissions_car_all_scenarios_bar
-```
-
-```{r}
-## versuch nur emission für slope ohne speed zu berechnen; geht das?
-
-test_emissions_car_slope <- emissions_car_slope
-test_emissions_car_slope$test_gkm <- 116.41017
-
-#test_emissions_car_slope <- test_emissions_car_slope |>
-#  mutate(test_emission_slope = test_gkm * (1 + mean_increase_perc/100))
-
-summary(test_emissions_car_slope)
 ```
 
 ```{r calculate daily emissions}
@@ -941,33 +930,29 @@ The comparison of our three approaches shows that the car emissions decrease whe
 
 *For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1.* --> war evtl fehler, ist jetzt nicht mehr so bei mir
 
-*Ich versuche da noch die Labels für die User zu fixen.*
+*Falls dir der Hintergrund nicht gefällt, hier hat es andere ;): https://leaflet-extras.github.io/leaflet-providers/preview/*
 
 ```{r plot car tracks above DHM, output = TRUE}
-# convert the car data to LV03 as the DHM is LV03
-posmo_car_lv03 <- posmo_lv03 |>
-  filter(transport_mode == "Car")
-
-# get the coordinates of this newly created data set
-posmo_car_lv03_coord <- st_coordinates(posmo_car_lv03)
-
-# add them back to the data frame
-posmo_car_lv03$X <- posmo_car_lv03_coord[,1]
-posmo_car_lv03$Y <- posmo_car_lv03_coord[,2]
+# convert the car data to WGS84 to use it with leaflet
+posmo_car_wgs84 <- posmo_car |>
+  st_transform(crs = 4326)
 
 #| label: fig-thirdteenthFigure
 #| fig-cap: Posmo tracks overlaid on the DHM25.
-# plot the dhm with the trajectories on top of it
-ggplot()+
-  geom_spatraster(data = dhm25)+
-  theme_minimal()+
-  labs(x = "E",
-       y = "N",
-       title = "Posmo car tracks over the DHM",
-       col = "User",
-       fill = "Elevation (m.a.s.l)")+
-  geom_sf(data = posmo_car_lv03, aes(col = user_id))+
-  coord_sf(datum = st_crs(21781))
+# create a color palette
+pal <- colorFactor("Set1", posmo_car_wgs84$user_id)
+
+# create the leaflet map with a relief as background
+leaflet(posmo_car_wgs84) |>
+  addTiles(urlTemplate = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}') |>
+  addCircleMarkers(opacity = 0.5, 
+                   color = ~pal(user_id),
+                   radius = 2) |>
+  addLegend(position = 'topright',
+            pal = pal,
+            values = ~user_id,
+            title = "User ID") |> 
+  addScaleBar(position = "bottomleft", scaleBarOptions(imperial = FALSE))
 
 ```
 
@@ -979,11 +964,11 @@ For the car emission calculations our calculations were more optimistic than the
 
 Our analysis was prone to several limitations. These ranged from inaccuracies in the data to limitations in our methods. Although only validated data from Posmo were included, there were errors resulting from the tracking where certain points were not located correctly. These lead to exceptionally high speed values or slope values. Therefore, all outliers were removed resulting in a smaller amount of data and uncertainties in the assumptions made. Another limitation was that only three different validated data sets were available which may not have well represented the general population.
 
-Furthermore, the approaches were highly simplified and have not taken into account factors related to vehicle model or fuel type. various sources were considered for the simple approach. However, the range of the reported emission values was huge and there most likely there are other sources stating different values. The speed approach was calculated using one source *which one* and extrapolating the observed values resulting in uncertainties. Similar problems occurred for the slope scenario where we only considered values from Xu et al. (2020). In addition, only positive slopes that cause an increase in emissions were considered, but no negative slopes which could have reduced potential emissions. Thus, our calculated emissions may be too high.
+Furthermore, the approaches were highly simplified and have not taken into account factors related to vehicle model or fuel type. various sources were considered for the simple approach. However, the range of the reported emission values was huge and there most likely there are other sources stating different values. The speed approach was calculated using one source (Dong et al., 2022) and extrapolating the observed values resulting in uncertainties. Similar problems occurred for the slope scenario where we only considered values from Xu et al. (2020). In addition, only positive slopes that cause an increase in emissions were considered, but no negative slopes which could have reduced potential emissions. Thus, our calculated emissions may be too high.
 
 Furthermore, the utilization of public transport or cars was also not included. We were able to accommodate this partly because we included a range of emission values in the simple approach. Additionally, we could not take into account the effect of fuel type as the vehicle model was not known or was constantly changing.
 
-A possible improvement would be to include changes in emissions due to acceleration and deceleration. Emissions can change significantly with changing speed (Dong et al., 2022). Figure ?? shows where there are locations with acceleration and deceleration.
+A possible improvement would be to include changes in emissions due to acceleration and deceleration. Emissions can change significantly with changing speed (Dong et al., 2022). Figure *??* shows where there are locations with acceleration and deceleration.
 
 ```{r plot acceleration and deceleration, output = TRUE}
 #| label: fig-fourteenthFigure
@@ -998,7 +983,6 @@ ggplot()+
   coord_sf(datum = st_crs(2056))+
   theme_minimal()
 ```
-
 
 # Conclusion 
 
