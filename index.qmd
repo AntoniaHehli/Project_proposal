@@ -930,7 +930,7 @@ The comparison of our three approaches shows that the car emissions decrease whe
 
 *For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1.* --> war evtl fehler, ist jetzt nicht mehr so bei mir
 
-*Falls dir der Hintergrund nicht gefällt, hier hat es andere ;): https://leaflet-extras.github.io/leaflet-providers/preview/* Figure caption hat nicht geklappt beim rendern für leaflet
+*Falls dir der Hintergrund nicht gefällt, hier hat es andere ;): https://leaflet-extras.github.io/leaflet-providers/preview/* Rendern hat nicht geklappt, wegen figure caption, die habe ich rausgenommen, aber geht immer noch nicht. Vermutlich weil zu oberst fig_caption: yes steht, hatte aber keine Zeit mehr, herauszufinden, wie man das für einen plot abstellen kann.
 
 ```{r plot car tracks above DHM, output = TRUE}
 # convert the car data to WGS84 to use it with leaflet
