@@ -289,3 +289,58 @@ emissions_plot_slope_car <- ggplot(emissions_new_slope,
 emissions_plot_slope_car
 ```
 
+```{r}
+ 
+ ggplot()+
+  geom_sf(aes(color = emission_increase_perc))+
+  geom_sf(data = CH_cantons, alpha = 0) +
+  labs(x = "E",
+       y = "N")+
+  scale_color_continuous(name = expression("CO"["2"]~ "emission increase [%]"), type = "viridis")+
+  coord_sf(datum = st_crs(2056))+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14))
+```
+
+```{r plot car tracks above DHM, output = TRUE}
+#| label: fig-thirteenthFigure
+#| fig-cap: Trajectories of all users.
+
+# convert the car data to WGS84 to use it with leaflet
+posmo_car_wgs84 <- posmo_car |>
+  st_transform(crs = 4326)
+
+# create a color palette
+pal <- colorFactor("Set1", posmo_car_wgs84$user_id)
+
+# create the leaflet map with a relief as background
+leaflet(posmo_car_wgs84) |>
+  addTiles(urlTemplate = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}') |>
+  addCircleMarkers(opacity = 0.5, 
+                   color = ~pal(user_id),
+                   radius = 2) |>
+  addLegend(position = 'topright',
+            pal = pal,
+            values = ~user_id,
+            title = "User ID") |> 
+  addScaleBar(position = "bottomleft", scaleBarOptions(imperial = FALSE))
+```
+
+*define segment id did not work*
+
+```{r define segments and plot one}
+rle_id <- function(vec) {
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times = x))
+}
+
+car_speed <- posmo_car |>
+  left_join(constants_emission, by = "transport_mode") |>
+  mutate(
+    speed_emission = avg * emission_increase_perc,
+    segment_id = rle_id(static)
+  )
+```
+
+
+*brauchen wir getDays function oder eigentlich nur getWeeks?? könnte man Funktion umschreiben?* Wir bräuchten nur get_weeks. Habe es versucht, hat auf die schnelle nicht geklappt. --> am abend versuchen
