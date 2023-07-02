@@ -930,15 +930,13 @@ The comparison of our three approaches shows that the car emissions decrease whe
 
 *For User 2 and 3 the emissions are higher with the slope approach than for the speed approach. This may be due to the fact that they were driving on more hilly roads with probably a higher speed compared to user 1.* --> war evtl fehler, ist jetzt nicht mehr so bei mir
 
-*Falls dir der Hintergrund nicht gefällt, hier hat es andere ;): https://leaflet-extras.github.io/leaflet-providers/preview/*
+*Falls dir der Hintergrund nicht gefällt, hier hat es andere ;): https://leaflet-extras.github.io/leaflet-providers/preview/* Figure caption hat nicht geklappt beim rendern für leaflet
 
 ```{r plot car tracks above DHM, output = TRUE}
 # convert the car data to WGS84 to use it with leaflet
 posmo_car_wgs84 <- posmo_car |>
   st_transform(crs = 4326)
 
-#| label: fig-thirdteenthFigure
-#| fig-cap: Posmo tracks overlaid on the DHM25.
 # create a color palette
 pal <- colorFactor("Set1", posmo_car_wgs84$user_id)
 
