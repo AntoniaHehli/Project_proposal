@@ -238,3 +238,54 @@ ggplot()+
        y = expression("CO"["2"] ~ "Emission [g/km]")) +
   theme_minimal()
 ```
+
+
+Average weekly emissions per transportation for speed and slope
+
+*restliche transport modes darstellen??* die sind dann im Vergleich, ansonsten haben wir das wieder doppelt. Oder habe ich etwas falsch verstanden? *sorry doof geschrieben: macht es sinn die anderen transport modes (train, bus, bike) hier darzustellen, da sich ja logischerweise nur car ändert; evtl. nur abbildung mit car? oder mache ich einen überlegungsfehler*
+
+```{r plot average weekly emission, output = TRUE}
+# create the bar chart
+emissions_plot_speed_car <- ggplot(emissions_new, aes(x = user_id, y = co2_emissions_g_per_w, 
+                                                      fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Users", 
+       y = expression("CO"["2"]~ "Emissions [g/week]"), 
+       fill = "Transport Mode",
+       subtitle = "Car emissions calculated based on speed") +
+  ggtitle("Average Weeky Emissions per Transportation Mode & User")+
+  ylim(0, 45000)+
+  theme_minimal()+
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
+
+#| label: fig-twelthFigure
+#| fig-cap: Comparison between CO~2~ emission of all transports mode with mode car calculated using a simple distance-based scenario (left) and a scenario based on driving speed (right).
+emissions_plot_speed_car
+```
+
+```{r}
+
+# create the bar chart
+emissions_plot_slope_car <- ggplot(emissions_new_slope, 
+                                   aes(x = user_id, 
+                                       y = co2_emissions_g_per_w, 
+                                       fill = transport_mode)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Users", 
+       y = expression("CO"["2"]~ "Emissions [g/week]"), 
+       fill = "Transport Mode",
+       subtitle = "Car emissions calculated based on slope") +
+  ggtitle("Average Weekly Emissions per Mode of Transport & User") +
+  ylim(0, 48000)+
+  theme_minimal()+
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8))
+
+#| label: fig-seventeenthFigure
+#| fig-cap: CO~2~ emission values for all transportat modes per user and week with car emissions calculated based on slope and speed.
+emissions_plot_slope_car
+```
+
